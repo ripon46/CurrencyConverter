@@ -1,0 +1,24 @@
+<resources>
+    <string name="app_name">Currency Converter</string>
+
+    <string-array name="currencies">
+        <item>USD</item>
+        <item>BDT</item>
+        <item>GBP</item>
+        <item>AUD</item>
+        <item>CAD</item>
+    </string-array>
+    <string-array name="leftSideCurrencies">
+        <item>1 USD</item>
+        <item>1 BDT</item>
+        <item>1 GBP</item>
+        <item>1 AUD</item>
+        <item>1 CAD</item>
+    </string-array>
+    <string name="title_activity_main2">Main2Activity</string>
+
+    <string name="navigation_drawer_open">Open navigation drawer</string>
+    <string name="navigation_drawer_close">Close navigation drawer</string>
+
+    <string name="action_settings">Settings</string>
+</resources>
