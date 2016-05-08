@@ -43,6 +43,7 @@ public class MainActivity extends AppCompatActivity {
 
 
         sharedPreferences = getSharedPreferences("currencyPreference", Context.MODE_PRIVATE);
+        Toast.makeText(getApplicationContext(),"This is changed",Toast.LENGTH_LONG).show();
 
 
         input.addTextChangedListener(new TextWatcher() {
