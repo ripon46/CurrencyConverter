@@ -1,6 +1,7 @@
 package com.therap.amin.currencyconverter;
 
 import android.content.Context;
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
@@ -20,10 +21,10 @@ import java.util.Map;
  */
 public class CurrencyValueSaver extends AppCompatActivity {
 
-    String[] currencies,leftSideCurrencies;
-    Spinner leftCurrency, rightCurrency;
-    Button save;
-    EditText conversionValue;
+    String[] availableCurrencies;
+    Spinner inputCurrencySpinner, outputCurrencySpinner;
+    Button saveButton;
+    EditText etConversionValue;
     SharedPreferences sharedPreferences;
 
     @Override
@@ -31,60 +32,58 @@ public class CurrencyValueSaver extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.currencyvaluesaver);
 
-        currencies = getResources().getStringArray(R.array.currencies);
+        availableCurrencies = getResources().getStringArray(R.array.currencies);
+        inputCurrencySpinner = (Spinner) findViewById(R.id.spnLeftCurrency);
+        outputCurrencySpinner = (Spinner) findViewById(R.id.spnRightCurrency);
+        saveButton = (Button) findViewById(R.id.btnSave);
+        etConversionValue = (EditText) findViewById(R.id.etRightCurrencyValue);
 
+        sharedPreferences = getSharedPreferences(Constants.preferenceKey, Context.MODE_PRIVATE);
 
-        leftCurrency = (Spinner) findViewById(R.id.spnLeftCurrency);
-        rightCurrency = (Spinner) findViewById(R.id.spnRightCurrency);
+        ArrayAdapter<String> inputCurrencyAdapter = new ArrayAdapter<String>(this, android.R.layout.simple_spinner_item, availableCurrencies);
+        inputCurrencySpinner.setAdapter(inputCurrencyAdapter);
 
-        save = (Button) findViewById(R.id.btnSave);
+        ArrayAdapter<String> outputCurrencyAdapter = new ArrayAdapter<String>(this, android.R.layout.simple_spinner_item, availableCurrencies);
+        outputCurrencySpinner.setAdapter(outputCurrencyAdapter);
 
-        conversionValue = (EditText) findViewById(R.id.etRightCurrencyValue);
-
-        sharedPreferences = getSharedPreferences("currencyPreference", Context.MODE_PRIVATE);
-
-
-        ArrayAdapter<String> leftCurrencyAdapter = new ArrayAdapter<String>(this,android.R.layout.simple_spinner_item,currencies);
-        leftCurrency.setAdapter(leftCurrencyAdapter);
-
-        ArrayAdapter<String> rightCurrencyAdapter = new ArrayAdapter<String>(this,android.R.layout.simple_spinner_item,currencies);
-        rightCurrency.setAdapter(rightCurrencyAdapter);
-
-
-
-        save.setOnClickListener(new View.OnClickListener() {
+        saveButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
 
-                if (!conversionValue.getText().toString().equals("")) {
-                    SharedPreferences.Editor editor = sharedPreferences.edit();
-                    String left = leftCurrency.getSelectedItem().toString();
-                    String right =rightCurrency.getSelectedItem().toString();
-                    if (left.equals(right)) {
-                        Toast.makeText(getApplicationContext(),"You can't set "+left+" -> "+right+" conversion value",Toast.LENGTH_SHORT).show();
-                        conversionValue.getText().clear();
+                if (!etConversionValue.getText().toString().equals("")) {
+
+                    String inputCurrency = inputCurrencySpinner.getSelectedItem().toString();
+                    String outputCurrency = outputCurrencySpinner.getSelectedItem().toString();
+                    if (inputCurrency.equals(outputCurrency)) {
+                        Toast.makeText(getApplicationContext(), "You can't set " + inputCurrency + " -> " + outputCurrency + " conversion value", Toast.LENGTH_SHORT).show();
+                    } else if (sharedPreferences.contains(Constants.inputCurrencyKey)) {
+                        removeFromPreference();
+                        addToPreference(inputCurrency,outputCurrency);
                     } else {
-                        Map<String, ?> allEntries = sharedPreferences.getAll();
-                        if (!allEntries.isEmpty()) {
-                            for (Map.Entry<String, ?> entry : allEntries.entrySet()) {
-                                editor.remove(entry.getKey());
-                            }
-                        }
-                        String key = left +"->"+ right;
-                        editor.putFloat(key,Float.parseFloat(conversionValue.getText().toString()));
-                        editor.commit();
-                        Toast.makeText(getApplicationContext(),"Saved Successfully",Toast.LENGTH_SHORT).show();
-                        finish();
+                        addToPreference(inputCurrency,outputCurrency);
                     }
-
                 } else {
-                    Toast.makeText(getApplicationContext(),"Please give input correctly",Toast.LENGTH_SHORT).show();
+                    Toast.makeText(getApplicationContext(), "Please give input correctly", Toast.LENGTH_SHORT).show();
                 }
-
             }
         });
+    }
 
+    public void removeFromPreference () {
+        SharedPreferences.Editor editor = sharedPreferences.edit();
+        editor.remove(Constants.inputCurrencyKey);
+        editor.remove(Constants.outputCurrencyKey);
+        editor.remove(Constants.conversionRateKey);
+        editor.apply();
+    }
 
-
+    public void addToPreference (String inputCurrency,String outputCurrency) {
+        SharedPreferences.Editor editor = sharedPreferences.edit();
+        editor.putFloat(Constants.conversionRateKey, Float.parseFloat(etConversionValue.getText().toString()));
+        editor.putString(Constants.inputCurrencyKey, inputCurrency);
+        editor.putString(Constants.outputCurrencyKey, outputCurrency);
+        Toast.makeText(getApplicationContext(), "Saved Successfully", Toast.LENGTH_SHORT).show();
+        editor.apply();
+        finish();
     }
 }

@@ -12,40 +12,85 @@
 
     <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="wrap_content">
+        android:layout_height="wrap_content"
+        android:orientation="horizontal">
+
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_weight="1"
+            android:layout_height="wrap_content"
+            android:orientation="vertical">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textSize="20sp"
+                android:text="From: "
+                />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textSize="30sp"
+                android:text="USD"
+                android:id="@+id/tvInputCurrency"
+                />
+
+
+        </LinearLayout>
+
+        <EditText
+            android:layout_width="0dp"
+            android:layout_weight="1"
+            android:layout_height="wrap_content"
+            android:id="@+id/etCurrencyAmount"
+            android:inputType="numberDecimal"
+            android:layout_gravity="center"
+            android:hint="Enter Amount"
+             />
+
+    </LinearLayout>
+
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="32dp">
+
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_weight="1"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            >
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="To: "
+                android:textSize="20sp" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="BDT"
+                android:id="@+id/tvOutputCurrency"
+                android:textSize="30sp" />
+        </LinearLayout>
 
         <TextView
             android:layout_width="0dp"
             android:layout_weight="1"
             android:layout_height="wrap_content"
+            android:text="0"
             android:textSize="20sp"
-            android:text="Enter Input Currency: "
-            android:id="@+id/tvInputCurrency"
-            />
+            android:layout_gravity="center"
+            android:freezesText="true"
+            android:id="@+id/tvOutputCurrencyValue" />
 
 
     </LinearLayout>
 
-
-
-
-    <EditText
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:id="@+id/etCurrencyAmount"
-        android:inputType="numberDecimal"
-        android:hint="Enter Amount"
-        android:layout_marginTop="36dp" />
-
-
-
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Converted Amount: "
-        android:id="@+id/tvOutputCurrency"
-        android:textSize="20sp"
-        android:layout_marginTop="32dp" />
 
 
 
