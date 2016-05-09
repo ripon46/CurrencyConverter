@@ -91,9 +91,5 @@ public class CurrencyValueSaver extends AppCompatActivity {
     public void onBackPressed() {
         super.onBackPressed();
 
-        Intent it = new Intent(CurrencyValueSaver.this, MainActivity.class);
-        it.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
-        startActivity(it);
-        finish();
     }
 }

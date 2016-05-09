@@ -89,25 +89,20 @@ public class MainActivity extends AppCompatActivity {
     protected void onResume() {
         super.onResume();
 
-        /*if (!sharedPreferences.contains(Constants.inputCurrencyKey) && onresumeExecution) {
+        boolean insideOnResumeForFirstTime = !sharedPreferences.contains(Constants.inputCurrencyKey) && onresumeExecution;
+        boolean insideOnResumeForSecondTimeButNoCurrencySaved = !sharedPreferences.contains(Constants.inputCurrencyKey) && !onresumeExecution;
+        if (insideOnResumeForFirstTime) {
             onresumeExecution = false;
             Toast.makeText(getApplicationContext(), "Please set value at first", Toast.LENGTH_SHORT).show();
             Intent intent = new Intent(MainActivity.this, CurrencyValueSaver.class);
             startActivity(intent);
-        } else if (!sharedPreferences.contains(Constants.inputCurrencyKey) && !onresumeExecution) {
+        } else if (insideOnResumeForSecondTimeButNoCurrencySaved) {
             finish();
         } else {
             tvInputCurrency.setText(sharedPreferences.getString(Constants.inputCurrencyKey, ""));
             tvOutputCurrency.setText(sharedPreferences.getString(Constants.outputCurrencyKey, ""));
-        }*/
-        if (!sharedPreferences.contains(Constants.inputCurrencyKey)) {
-            Toast.makeText(getApplicationContext(), "Please set value at first", Toast.LENGTH_SHORT).show();
-            Intent intent = new Intent(MainActivity.this, CurrencyValueSaver.class);
-            startActivity(intent);
-        } else {
-            tvInputCurrency.setText(sharedPreferences.getString(Constants.inputCurrencyKey, ""));
-            tvOutputCurrency.setText(sharedPreferences.getString(Constants.outputCurrencyKey, ""));
         }
+
         Log.d(Constants.TAG, "onResume: ");
     }
 }
