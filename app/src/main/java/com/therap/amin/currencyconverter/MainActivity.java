@@ -18,7 +18,6 @@ import android.widget.Toast;
 
 public class MainActivity extends AppCompatActivity {
 
-    private static final String TAG = "ripon";
     TextView tvOutputCurrency,tvOutputCurrencyValue, tvInputCurrency;
     EditText etInputCurrencyValue;
 
@@ -31,7 +30,7 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         onresumeExecution = true;
-        Log.d(TAG, "onCreate: ");
+        Log.d(Constants.TAG, "onCreate: ");
 
         tvOutputCurrency = (TextView) findViewById(R.id.tvOutputCurrency);
         tvOutputCurrencyValue = (TextView) findViewById(R.id.tvOutputCurrencyValue);
@@ -90,7 +89,7 @@ public class MainActivity extends AppCompatActivity {
     protected void onResume() {
         super.onResume();
 
-        if (!sharedPreferences.contains(Constants.inputCurrencyKey) && onresumeExecution) {
+        /*if (!sharedPreferences.contains(Constants.inputCurrencyKey) && onresumeExecution) {
             onresumeExecution = false;
             Toast.makeText(getApplicationContext(), "Please set value at first", Toast.LENGTH_SHORT).show();
             Intent intent = new Intent(MainActivity.this, CurrencyValueSaver.class);
@@ -100,8 +99,16 @@ public class MainActivity extends AppCompatActivity {
         } else {
             tvInputCurrency.setText(sharedPreferences.getString(Constants.inputCurrencyKey, ""));
             tvOutputCurrency.setText(sharedPreferences.getString(Constants.outputCurrencyKey, ""));
+        }*/
+        if (!sharedPreferences.contains(Constants.inputCurrencyKey)) {
+            Toast.makeText(getApplicationContext(), "Please set value at first", Toast.LENGTH_SHORT).show();
+            Intent intent = new Intent(MainActivity.this, CurrencyValueSaver.class);
+            startActivity(intent);
+        } else {
+            tvInputCurrency.setText(sharedPreferences.getString(Constants.inputCurrencyKey, ""));
+            tvOutputCurrency.setText(sharedPreferences.getString(Constants.outputCurrencyKey, ""));
         }
-        Log.d(TAG, "onResume: ");
+        Log.d(Constants.TAG, "onResume: ");
     }
 }
 

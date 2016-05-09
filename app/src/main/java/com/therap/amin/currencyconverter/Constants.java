@@ -9,4 +9,5 @@ public class Constants {
     public static final String inputCurrencyKey ="inputCurrencyKey";
     public static final String outputCurrencyKey = "outputCurrencyKey";
     public static final String conversionRateKey = "conversionRateKey";
+    public static final String TAG = "ripon";
 }
