@@ -38,7 +38,7 @@ public class MainActivity extends AppCompatActivity {
         etInputCurrencyValue = (EditText) findViewById(R.id.etCurrencyAmount);
         tvOutputCurrencyValue.setText("0");
 
-        sharedPreferences = getSharedPreferences(Constants.preferenceKey, Context.MODE_PRIVATE);
+        sharedPreferences = getSharedPreferences(Constants.PREFERENCE_KEY, Context.MODE_PRIVATE);
 
         etInputCurrencyValue.addTextChangedListener(new TextWatcher() {
             @Override
@@ -50,7 +50,7 @@ public class MainActivity extends AppCompatActivity {
             public void onTextChanged(CharSequence s, int start, int before, int count) {
                 if (!s.toString().equals("")) {
                     double convertedAmount = Double.parseDouble(s.toString());
-                    float conversionVal = sharedPreferences.getFloat(Constants.conversionRateKey, 0);
+                    double conversionVal = Double.parseDouble(sharedPreferences.getString(Constants.CONVERSION_RATE_KEY, ""));
                     convertedAmount *= conversionVal;
                     tvOutputCurrencyValue.setText(String.format("%.2f",convertedAmount));
                 } else {
@@ -76,8 +76,8 @@ public class MainActivity extends AppCompatActivity {
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
             case R.id.menu_currencyvalues:
-                Intent intent = new Intent(MainActivity.this, CurrencyValueSaver.class);
-                startActivity(intent);
+                Intent intent = new Intent(MainActivity.this, CurrencyValueSaverActivity.class);
+                startActivityForResult(intent,1);
                 return true;
 
             default:
@@ -89,21 +89,27 @@ public class MainActivity extends AppCompatActivity {
     protected void onResume() {
         super.onResume();
 
-        boolean insideOnResumeForFirstTime = !sharedPreferences.contains(Constants.inputCurrencyKey) && onresumeExecution;
-        boolean insideOnResumeForSecondTimeButNoCurrencySaved = !sharedPreferences.contains(Constants.inputCurrencyKey) && !onresumeExecution;
-        if (insideOnResumeForFirstTime) {
+        if (!sharedPreferences.contains(Constants.INPUT_CURRENCY_KEY)) {
             onresumeExecution = false;
             Toast.makeText(getApplicationContext(), "Please set value at first", Toast.LENGTH_SHORT).show();
-            Intent intent = new Intent(MainActivity.this, CurrencyValueSaver.class);
-            startActivity(intent);
-        } else if (insideOnResumeForSecondTimeButNoCurrencySaved) {
-            finish();
+            Intent intent = new Intent(MainActivity.this, CurrencyValueSaverActivity.class);
+            startActivityForResult(intent,1);
         } else {
-            tvInputCurrency.setText(sharedPreferences.getString(Constants.inputCurrencyKey, ""));
-            tvOutputCurrency.setText(sharedPreferences.getString(Constants.outputCurrencyKey, ""));
+            tvInputCurrency.setText(sharedPreferences.getString(Constants.INPUT_CURRENCY_KEY, ""));
+            tvOutputCurrency.setText(sharedPreferences.getString(Constants.OUTPUT_CURRENCY_KEY, ""));
         }
 
         Log.d(Constants.TAG, "onResume: ");
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        if (requestCode == 1) {
+            if (resultCode != RESULT_OK) {
+                finish();
+            }
+        }
+        Log.d(Constants.TAG, "onActivityResult: ");
     }
 }
 

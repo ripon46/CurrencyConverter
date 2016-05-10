@@ -5,9 +5,9 @@ package com.therap.amin.currencyconverter;
  */
 public class Constants {
 
-    public static final String preferenceKey = "preferenceKey";
-    public static final String inputCurrencyKey ="inputCurrencyKey";
-    public static final String outputCurrencyKey = "outputCurrencyKey";
-    public static final String conversionRateKey = "conversionRateKey";
+    public static final String PREFERENCE_KEY = "preferenceKey";
+    public static final String INPUT_CURRENCY_KEY ="inputCurrencyKey";
+    public static final String OUTPUT_CURRENCY_KEY = "outputCurrencyKey";
+    public static final String CONVERSION_RATE_KEY = "conversionRateKey";
     public static final String TAG = "ripon";
 }

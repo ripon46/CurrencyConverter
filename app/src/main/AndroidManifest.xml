@@ -16,7 +16,7 @@
             </intent-filter>
         </activity>
 
-        <activity android:name=".CurrencyValueSaver">
+        <activity android:name=".CurrencyValueSaverActivity">
             <intent-filter>
                 <action android:name="android.intent.action.CURRENCYVALUESAVER" />
 
