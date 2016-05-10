@@ -6,47 +6,37 @@ import android.content.SharedPreferences;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.text.Editable;
-import android.text.InputType;
 import android.text.TextWatcher;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
-import android.view.View;
-import android.widget.ArrayAdapter;
 import android.widget.EditText;
-import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import java.util.Map;
 
 public class MainActivity extends AppCompatActivity {
 
-    private static final String TAG = "ripon";
-    TextView output,inputCurrency;
-    EditText input;
-    String key;
-    String currencies[];
-
+    TextView tvOutputCurrency,tvOutputCurrencyValue, tvInputCurrency;
+    EditText etInputCurrencyValue;
     SharedPreferences sharedPreferences;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        Log.d(TAG, "onCreate: ");
+        Log.d(Constants.TAG, "onCreate: ");
 
-        output = (TextView) findViewById(R.id.tvOutputCurrency);
-        inputCurrency = (TextView) findViewById(R.id.tvInputCurrency);
-        input = (EditText) findViewById(R.id.etCurrencyAmount);
+        tvOutputCurrency = (TextView) findViewById(R.id.tvOutputCurrency);
+        tvOutputCurrencyValue = (TextView) findViewById(R.id.tvOutputCurrencyValue);
+        tvInputCurrency = (TextView) findViewById(R.id.tvInputCurrency);
+        etInputCurrencyValue = (EditText) findViewById(R.id.etCurrencyAmount);
+        tvOutputCurrencyValue.setText("0");
 
+        sharedPreferences = getSharedPreferences(Constants.PREFERENCE_KEY, Context.MODE_PRIVATE);
 
-        sharedPreferences = getSharedPreferences("currencyPreference", Context.MODE_PRIVATE);
-        Toast.makeText(getApplicationContext(),"This is changed",Toast.LENGTH_LONG).show();
-
-
-        input.addTextChangedListener(new TextWatcher() {
+        etInputCurrencyValue.addTextChangedListener(new TextWatcher() {
             @Override
             public void beforeTextChanged(CharSequence s, int start, int count, int after) {
 
@@ -56,16 +46,12 @@ public class MainActivity extends AppCompatActivity {
             public void onTextChanged(CharSequence s, int start, int before, int count) {
                 if (!s.toString().equals("")) {
                     double convertedAmount = Double.parseDouble(s.toString());
-                    float conversionVal = sharedPreferences.getFloat(key,0);
+                    double conversionVal = Double.parseDouble(sharedPreferences.getString(Constants.CONVERSION_RATE_KEY, ""));
                     convertedAmount *= conversionVal;
-                    //output.setText("Converted currency: "+ convertedAmount);
-                    if (key != null) {
-                        currencies = key.split("->");
-                        output.setText("Converted currency in "+currencies[1]+": "+convertedAmount);
-                    }
-
+                    tvOutputCurrencyValue.setText(String.format("%.2f",convertedAmount));
+                } else {
+                    tvOutputCurrencyValue.setText("0");
                 }
-
             }
 
             @Override
@@ -73,8 +59,6 @@ public class MainActivity extends AppCompatActivity {
 
             }
         });
-
-
     }
 
     @Override
@@ -86,11 +70,10 @@ public class MainActivity extends AppCompatActivity {
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-        switch (item.getItemId())
-        {
+        switch (item.getItemId()) {
             case R.id.menu_currencyvalues:
-                Intent intent = new Intent(MainActivity.this,CurrencyValueSaver.class);
-                startActivity(intent);
+                Intent intent = new Intent(MainActivity.this, CurrencyValueSaverActivity.class);
+                startActivityForResult(intent,1);
                 return true;
 
             default:
@@ -99,48 +82,29 @@ public class MainActivity extends AppCompatActivity {
     }
 
     @Override
-    protected void onSaveInstanceState(Bundle outState) {
-        super.onSaveInstanceState(outState);
-        Log.d(TAG, "onSaveInstanceState: ");
-        outState.putString("output",output.getText().toString());
-        outState.putString("value",input.getText().toString());
-    }
-
-    @Override
-    protected void onRestoreInstanceState(Bundle savedInstanceState) {
-        super.onRestoreInstanceState(savedInstanceState);
-        input.setText(savedInstanceState.getString("value"));
-        output.setText(savedInstanceState.getString("output"));
-        Log.d(TAG, "onRestoreInstanceState: ");
-    }
-
-    @Override
     protected void onResume() {
         super.onResume();
 
-
-        Map<String, ?> allEntries = sharedPreferences.getAll();
-        if (allEntries.isEmpty()) {
-            Toast.makeText(getApplicationContext(),"Please set value at first",Toast.LENGTH_SHORT).show();
-            Intent intent = new Intent(MainActivity.this,CurrencyValueSaver.class);
-            startActivity(intent);
+        if (!sharedPreferences.contains(Constants.INPUT_CURRENCY_KEY)) {
+            Toast.makeText(getApplicationContext(), "Please set value at first", Toast.LENGTH_SHORT).show();
+            Intent intent = new Intent(MainActivity.this, CurrencyValueSaverActivity.class);
+            startActivityForResult(intent,1);
         } else {
-            for (Map.Entry<String, ?> entry : allEntries.entrySet()) {
-                Toast.makeText(getApplicationContext(),entry.getKey()+" is set",Toast.LENGTH_SHORT).show();
-                key = entry.getKey();
-            }
-            currencies = key.split("->");
-            inputCurrency.setText("Enter currency in "+currencies[0]);
-            //output.setText("Converted currency in "+currencies[1]+": "+" 0");
+            tvInputCurrency.setText(sharedPreferences.getString(Constants.INPUT_CURRENCY_KEY, ""));
+            tvOutputCurrency.setText(sharedPreferences.getString(Constants.OUTPUT_CURRENCY_KEY, ""));
         }
-        Log.d(TAG, "onResume: ");
 
+        Log.d(Constants.TAG, "onResume: ");
     }
 
     @Override
-    protected void onDestroy() {
-        super.onDestroy();
-        Log.d(TAG, "onDestroy: ");
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        if (requestCode == 1) {
+            if (resultCode != RESULT_OK) {
+                finish();
+            }
+        }
+        Log.d(Constants.TAG, "onActivityResult: ");
     }
 }
 
