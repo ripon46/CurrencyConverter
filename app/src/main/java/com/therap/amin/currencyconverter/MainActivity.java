@@ -20,16 +20,12 @@ public class MainActivity extends AppCompatActivity {
 
     TextView tvOutputCurrency,tvOutputCurrencyValue, tvInputCurrency;
     EditText etInputCurrencyValue;
-
-    boolean onresumeExecution;
-
     SharedPreferences sharedPreferences;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        onresumeExecution = true;
         Log.d(Constants.TAG, "onCreate: ");
 
         tvOutputCurrency = (TextView) findViewById(R.id.tvOutputCurrency);
@@ -90,7 +86,6 @@ public class MainActivity extends AppCompatActivity {
         super.onResume();
 
         if (!sharedPreferences.contains(Constants.INPUT_CURRENCY_KEY)) {
-            onresumeExecution = false;
             Toast.makeText(getApplicationContext(), "Please set value at first", Toast.LENGTH_SHORT).show();
             Intent intent = new Intent(MainActivity.this, CurrencyValueSaverActivity.class);
             startActivityForResult(intent,1);
