@@ -43,8 +43,18 @@ public class CurrencyValueSaverActivity extends AppCompatActivity {
         ArrayAdapter<String> inputCurrencyAdapter = new ArrayAdapter<String>(this, android.R.layout.simple_spinner_item, availableCurrencies);
         inputCurrencySpinner.setAdapter(inputCurrencyAdapter);
 
+
         ArrayAdapter<String> outputCurrencyAdapter = new ArrayAdapter<String>(this, android.R.layout.simple_spinner_item, availableCurrencies);
         outputCurrencySpinner.setAdapter(outputCurrencyAdapter);
+
+        if (sharedPreferences.contains(Constants.INPUT_CURRENCY_KEY)) {
+            int fromCurrencyposition = inputCurrencyAdapter.getPosition(sharedPreferences.getString(Constants.INPUT_CURRENCY_KEY,""));
+            inputCurrencySpinner.setSelection(fromCurrencyposition);
+            int toCurrencyposition = inputCurrencyAdapter.getPosition(sharedPreferences.getString(Constants.OUTPUT_CURRENCY_KEY,""));
+            outputCurrencySpinner.setSelection(toCurrencyposition);
+            etConversionValue.setText(sharedPreferences.getString(Constants.CONVERSION_RATE_KEY,""));
+        }
+
 
         saveButton.setOnClickListener(new View.OnClickListener() {
             @Override
