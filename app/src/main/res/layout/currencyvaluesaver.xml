@@ -12,12 +12,13 @@
         <TextView
             android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:text="ONE "
+            android:text="INPUT CURRENCY "
             android:layout_margin="10dp"
-            android:gravity="right"
+            android:gravity="center"
             android:layout_gravity="center_vertical"
             android:layout_weight="5"
             android:textSize="18sp"
+            style="@style/CustomFontStyle"
             android:id="@+id/textView2" />
 
         <Spinner
@@ -26,18 +27,9 @@
             android:id="@+id/spnLeftCurrency"
             android:layout_weight="6"
             android:textSize="20sp"
-
+            android:gravity="center"
             android:layout_gravity="center" />
 
-        <TextView
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="5"
-            android:text="Equals"
-            android:textSize="18sp"
-            android:id="@+id/textView"
-            android:layout_margin="10dp"
-            android:layout_gravity="center" />
 
 
     </LinearLayout>
@@ -52,14 +44,16 @@
         android:orientation="horizontal"
         android:layout_marginTop="20dp">
 
-        <EditText
+        <TextView
             android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:id="@+id/etRightCurrencyValue"
-            android:inputType="numberDecimal"
-            android:layout_weight="2"
-            android:layout_margin="20dp"
-            android:hint="Enter Conversion value"
+            android:layout_weight="5"
+            android:text="OUTPUT CURRENCY"
+            android:textSize="18sp"
+            android:id="@+id/textView"
+            android:layout_margin="10dp"
+            style="@style/CustomFontStyle"
+            android:gravity="center"
             android:layout_gravity="center" />
 
 
@@ -67,8 +61,8 @@
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:id="@+id/spnRightCurrency"
-            android:layout_weight="1"
-            android:layout_marginRight="10dp"
+            android:layout_weight="6"
+            android:gravity="center"
             android:layout_gravity="center" />
 
 
@@ -76,6 +70,23 @@
 
 
     </LinearLayout>
+
+    <android.support.design.widget.TextInputLayout
+        android:layout_width="match_parent"
+        android:layout_gravity="center"
+
+        android:layout_height="wrap_content"
+        android:layout_margin="20dp">
+
+        <EditText
+            android:id="@+id/etRightCurrencyValue"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:inputType="numberDecimal"
+            android:hint="Enter Conversion Value" />
+
+    </android.support.design.widget.TextInputLayout>
+
 
     <Button
         android:layout_width="wrap_content"
