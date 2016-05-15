@@ -28,7 +28,9 @@ public class CurrencyValueSaverFragment extends Fragment{
     Spinner inputCurrencySpinner, outputCurrencySpinner;
     Button saveButton;
     EditText etConversionValue;
+
     SharedPreferences sharedPreferences;
+
 
     @Nullable
     @Override
@@ -50,11 +52,15 @@ public class CurrencyValueSaverFragment extends Fragment{
         outputCurrencySpinner.setAdapter(outputCurrencyAdapter);
 
         if (sharedPreferences.contains(Constants.INPUT_CURRENCY_KEY)) {
-            int fromCurrencyposition = inputCurrencyAdapter.getPosition(sharedPreferences.getString(Constants.INPUT_CURRENCY_KEY,""));
+            String fromCurrency = sharedPreferences.getString(Constants.INPUT_CURRENCY_KEY,"");
+            String toCurrency = sharedPreferences.getString(Constants.OUTPUT_CURRENCY_KEY,"");
+            String conversionValue = sharedPreferences.getString(Constants.CONVERSION_RATE_KEY,"");
+            int fromCurrencyposition = inputCurrencyAdapter.getPosition(fromCurrency);
             inputCurrencySpinner.setSelection(fromCurrencyposition);
-            int toCurrencyposition = inputCurrencyAdapter.getPosition(sharedPreferences.getString(Constants.OUTPUT_CURRENCY_KEY,""));
+            int toCurrencyposition = inputCurrencyAdapter.getPosition(toCurrency);
             outputCurrencySpinner.setSelection(toCurrencyposition);
-            etConversionValue.setText(sharedPreferences.getString(Constants.CONVERSION_RATE_KEY,""));
+            etConversionValue.setText(conversionValue);
+
         }
 
 
@@ -80,6 +86,7 @@ public class CurrencyValueSaverFragment extends Fragment{
         return view;
     }
 
+
     public void removeFromPreference () {
         SharedPreferences.Editor editor = sharedPreferences.edit();
         editor.remove(Constants.INPUT_CURRENCY_KEY);
@@ -100,8 +107,13 @@ public class CurrencyValueSaverFragment extends Fragment{
             Toast.makeText(getActivity(),"Set successfully",Toast.LENGTH_SHORT).show();
             TextView tvInputCurrency = (TextView) getActivity().findViewById(R.id.tvInputCurrency);
             TextView tvOutputCurrency = (TextView) getActivity().findViewById(R.id.tvOutputCurrency);
+            TextView tvSavedCurrency = (TextView) getActivity().findViewById(R.id.tvSavedCurrency);
             tvInputCurrency.setText(sharedPreferences.getString(Constants.INPUT_CURRENCY_KEY, "Not Set"));
             tvOutputCurrency.setText(sharedPreferences.getString(Constants.OUTPUT_CURRENCY_KEY, "Not Set"));
+            String fromCurrency = sharedPreferences.getString(Constants.INPUT_CURRENCY_KEY,"");
+            String toCurrency = sharedPreferences.getString(Constants.OUTPUT_CURRENCY_KEY,"");
+            String conversionValue = sharedPreferences.getString(Constants.CONVERSION_RATE_KEY,"");
+            tvSavedCurrency.setText("1 "+fromCurrency+" = "+conversionValue+" "+toCurrency);
         }
 
     }

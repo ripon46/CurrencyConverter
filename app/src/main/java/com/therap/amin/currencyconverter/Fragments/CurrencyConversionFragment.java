@@ -13,7 +13,6 @@ import android.widget.EditText;
 import android.widget.TextView;
 
 import com.therap.amin.currencyconverter.Constants;
-import com.therap.amin.currencyconverter.MainActivity;
 import com.therap.amin.currencyconverter.R;
 
 /**
@@ -24,6 +23,7 @@ public class CurrencyConversionFragment extends Fragment{
     SharedPreferences sharedPreferences;
     TextView tvOutputCurrency,tvOutputCurrencyValue,tvInputCurrency;
     EditText etInputCurrencyValue;
+    TextView tvSavedCurrency;
 
 
     @Override
@@ -35,7 +35,18 @@ public class CurrencyConversionFragment extends Fragment{
         etInputCurrencyValue = (EditText) view.findViewById(R.id.etCurrencyAmount);
         tvOutputCurrencyValue.setText("0");
 
+        tvSavedCurrency = (TextView) view.findViewById(R.id.tvSavedCurrency);
         sharedPreferences = getActivity().getSharedPreferences(Constants.PREFERENCE_KEY, Context.MODE_PRIVATE);
+
+        String fromCurrency = sharedPreferences.getString(Constants.INPUT_CURRENCY_KEY,"");
+        String toCurrency = sharedPreferences.getString(Constants.OUTPUT_CURRENCY_KEY,"");
+        String conversionValue = sharedPreferences.getString(Constants.CONVERSION_RATE_KEY,"");
+        if (fromCurrency.equals("")) {
+            tvSavedCurrency.setText("Not Set Yet");
+        } else {
+            tvSavedCurrency.setText("1 "+fromCurrency+" = "+conversionValue+" "+toCurrency);
+        }
+
 
         etInputCurrencyValue.addTextChangedListener(new TextWatcher() {
             @Override
@@ -50,7 +61,6 @@ public class CurrencyConversionFragment extends Fragment{
                     double conversionVal = Double.parseDouble(sharedPreferences.getString(Constants.CONVERSION_RATE_KEY, "0"));
                     convertedAmount *= conversionVal;
                     tvOutputCurrencyValue.setText(String.format("%.2f",convertedAmount));
-                    MainActivity.expand(tvOutputCurrencyValue);
                 } else {
                     tvOutputCurrencyValue.setText("0");
                 }

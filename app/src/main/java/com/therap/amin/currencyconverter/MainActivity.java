@@ -11,18 +11,14 @@ import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
-import android.view.View;
-import android.view.animation.Animation;
-import android.view.animation.Transformation;
 import android.widget.EditText;
-import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
 
 public class MainActivity extends AppCompatActivity {
 
-    TextView tvOutputCurrency,tvOutputCurrencyValue, tvInputCurrency;
+    TextView tvOutputCurrency,tvOutputCurrencyValue, tvInputCurrency,tvSavedCurrency;
     EditText etInputCurrencyValue;
     SharedPreferences sharedPreferences;
 
@@ -34,7 +30,6 @@ public class MainActivity extends AppCompatActivity {
         boolean tabletSize = getResources().getBoolean(R.bool.isTablet);
         if (tabletSize) {
             setContentView(R.layout.activity_main_tab);
-            Toast.makeText(getApplicationContext(),"set",Toast.LENGTH_SHORT).show();
         } else {
             setContentView(R.layout.activity_main);
             Log.d(Constants.TAG, "onCreate: ");
@@ -44,6 +39,7 @@ public class MainActivity extends AppCompatActivity {
             tvInputCurrency = (TextView) findViewById(R.id.tvInputCurrency);
             etInputCurrencyValue = (EditText) findViewById(R.id.etCurrencyAmount);
             tvOutputCurrencyValue.setText("0");
+            tvSavedCurrency = (TextView) findViewById(R.id.tvSavedCurrency);
 
             sharedPreferences = getSharedPreferences(Constants.PREFERENCE_KEY, Context.MODE_PRIVATE);
 
@@ -57,7 +53,7 @@ public class MainActivity extends AppCompatActivity {
                 public void onTextChanged(CharSequence s, int start, int before, int count) {
                     if (!s.toString().equals("")) {
                         double convertedAmount = Double.parseDouble(s.toString());
-                        double conversionVal = Double.parseDouble(sharedPreferences.getString(Constants.CONVERSION_RATE_KEY, ""));
+                        double conversionVal = Double.parseDouble(sharedPreferences.getString(Constants.CONVERSION_RATE_KEY, "0"));
                         convertedAmount *= conversionVal;
                         tvOutputCurrencyValue.setText(String.format("%.2f",convertedAmount));
 
@@ -120,9 +116,12 @@ public class MainActivity extends AppCompatActivity {
             } else {
                 tvInputCurrency.setText(sharedPreferences.getString(Constants.INPUT_CURRENCY_KEY, ""));
                 tvOutputCurrency.setText(sharedPreferences.getString(Constants.OUTPUT_CURRENCY_KEY, ""));
+                tvSavedCurrency.setText("1 "+sharedPreferences.getString(Constants.INPUT_CURRENCY_KEY, "")+" = "+sharedPreferences.getString(Constants.CONVERSION_RATE_KEY, "")+" "+sharedPreferences.getString(Constants.OUTPUT_CURRENCY_KEY, ""));
             }
 
             Log.d(Constants.TAG, "onResume: ");
+        } else {
+
         }
 
 
@@ -140,61 +139,6 @@ public class MainActivity extends AppCompatActivity {
             Log.d(Constants.TAG, "onActivityResult: ");
         }
 
-    }
-
-    public static void expand(final View v) {
-        v.measure(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT);
-        final int targetHeight = v.getMeasuredHeight();
-
-        // Older versions of android (pre API 21) cancel animations for views with a height of 0.
-        v.getLayoutParams().height = 1;
-        v.setVisibility(View.VISIBLE);
-        Animation a = new Animation()
-        {
-            @Override
-            protected void applyTransformation(float interpolatedTime, Transformation t) {
-                v.getLayoutParams().height = interpolatedTime == 1
-                        ? LinearLayout.LayoutParams.WRAP_CONTENT
-                        : (int)(targetHeight * interpolatedTime);
-                v.requestLayout();
-            }
-
-            @Override
-            public boolean willChangeBounds() {
-                return true;
-            }
-        };
-
-        a.setDuration(300);
-        // 1dp/ms
-        //a.setDuration((int)(targetHeight / v.getContext().getResources().getDisplayMetrics().density));
-        v.startAnimation(a);
-    }
-
-    public static void collapse(final View v) {
-        final int initialHeight = v.getMeasuredHeight();
-
-        Animation a = new Animation()
-        {
-            @Override
-            protected void applyTransformation(float interpolatedTime, Transformation t) {
-                if(interpolatedTime == 1){
-                    v.setVisibility(View.GONE);
-                }else{
-                    v.getLayoutParams().height = initialHeight - (int)(initialHeight * interpolatedTime);
-                    v.requestLayout();
-                }
-            }
-
-            @Override
-            public boolean willChangeBounds() {
-                return true;
-            }
-        };
-
-        // 1dp/ms
-        a.setDuration((int)(initialHeight / v.getContext().getResources().getDisplayMetrics().density));
-        v.startAnimation(a);
     }
 }
 

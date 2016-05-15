@@ -8,7 +8,8 @@
         android:label="@string/app_name"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
-        <activity android:name=".MainActivity">
+        <activity android:name=".MainActivity"
+            android:configChanges="screenLayout|screenSize">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
@@ -16,7 +17,8 @@
             </intent-filter>
         </activity>
 
-        <activity android:name=".CurrencyValueSaverActivity">
+        <activity android:name=".CurrencyValueSaverActivity"
+            android:configChanges="screenLayout|screenSize">
             <intent-filter>
                 <action android:name="android.intent.action.CURRENCYVALUESAVER" />
 
