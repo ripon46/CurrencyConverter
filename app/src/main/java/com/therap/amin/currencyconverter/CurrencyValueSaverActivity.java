@@ -6,7 +6,6 @@ import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v7.app.AppCompatActivity;
-import android.util.Log;
 import android.view.View;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
@@ -48,11 +47,11 @@ public class CurrencyValueSaverActivity extends AppCompatActivity {
         outputCurrencySpinner.setAdapter(outputCurrencyAdapter);
 
         if (sharedPreferences.contains(Constants.INPUT_CURRENCY_KEY)) {
-            int fromCurrencyposition = inputCurrencyAdapter.getPosition(sharedPreferences.getString(Constants.INPUT_CURRENCY_KEY,""));
+            int fromCurrencyposition = inputCurrencyAdapter.getPosition(sharedPreferences.getString(Constants.INPUT_CURRENCY_KEY, ""));
             inputCurrencySpinner.setSelection(fromCurrencyposition);
-            int toCurrencyposition = inputCurrencyAdapter.getPosition(sharedPreferences.getString(Constants.OUTPUT_CURRENCY_KEY,""));
+            int toCurrencyposition = inputCurrencyAdapter.getPosition(sharedPreferences.getString(Constants.OUTPUT_CURRENCY_KEY, ""));
             outputCurrencySpinner.setSelection(toCurrencyposition);
-            etConversionValue.setText(sharedPreferences.getString(Constants.CONVERSION_RATE_KEY,""));
+            etConversionValue.setText(sharedPreferences.getString(Constants.CONVERSION_RATE_KEY, ""));
         }
 
 
@@ -66,9 +65,9 @@ public class CurrencyValueSaverActivity extends AppCompatActivity {
                     String outputCurrency = outputCurrencySpinner.getSelectedItem().toString();
                     if (sharedPreferences.contains(Constants.INPUT_CURRENCY_KEY)) {
                         removeFromPreference();
-                        addToPreference(inputCurrency,outputCurrency);
+                        addToPreference(inputCurrency, outputCurrency);
                     } else {
-                        addToPreference(inputCurrency,outputCurrency);
+                        addToPreference(inputCurrency, outputCurrency);
                     }
                 } else {
                     Toast.makeText(getApplicationContext(), "Please give input correctly", Toast.LENGTH_SHORT).show();
@@ -77,7 +76,7 @@ public class CurrencyValueSaverActivity extends AppCompatActivity {
         });
     }
 
-    public void removeFromPreference () {
+    public void removeFromPreference() {
         SharedPreferences.Editor editor = sharedPreferences.edit();
         editor.remove(Constants.INPUT_CURRENCY_KEY);
         editor.remove(Constants.OUTPUT_CURRENCY_KEY);
@@ -85,7 +84,7 @@ public class CurrencyValueSaverActivity extends AppCompatActivity {
         editor.apply();
     }
 
-    public void addToPreference (String inputCurrency,String outputCurrency) {
+    public void addToPreference(String inputCurrency, String outputCurrency) {
         if (inputCurrency.equals(outputCurrency)) {
             Toast.makeText(getApplicationContext(), "You can't set " + inputCurrency + " -> " + outputCurrency + " conversion value", Toast.LENGTH_SHORT).show();
         } else {
@@ -94,9 +93,9 @@ public class CurrencyValueSaverActivity extends AppCompatActivity {
             editor.putString(Constants.INPUT_CURRENCY_KEY, inputCurrency);
             editor.putString(Constants.OUTPUT_CURRENCY_KEY, outputCurrency);
             editor.apply();
-            Toast.makeText(getApplicationContext(),"Set successfully",Toast.LENGTH_SHORT).show();
+            Toast.makeText(getApplicationContext(), "Set successfully", Toast.LENGTH_SHORT).show();
             Intent i = new Intent();
-            setResult(RESULT_OK,i);
+            setResult(RESULT_OK, i);
             finish();
         }
 
@@ -104,16 +103,22 @@ public class CurrencyValueSaverActivity extends AppCompatActivity {
 
     @Override
     public void onBackPressed() {
-
-        if (sharedPreferences.contains(Constants.INPUT_CURRENCY_KEY)) {
-            Intent i = new Intent();
-            setResult(RESULT_OK,i);
+        boolean tabletSize = getResources().getBoolean(R.bool.isTablet);
+        if (tabletSize) {
             finish();
         } else {
-            Intent i = new Intent();
-            setResult(RESULT_CANCELED,i);
-            finish();
+            if (sharedPreferences.contains(Constants.INPUT_CURRENCY_KEY)) {
+                Intent i = new Intent();
+                setResult(RESULT_OK, i);
+                finish();
+            } else {
+                Intent i = new Intent();
+                setResult(RESULT_CANCELED, i);
+                finish();
+            }
         }
+
+
         super.onBackPressed();
     }
 }

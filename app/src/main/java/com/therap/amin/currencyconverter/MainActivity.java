@@ -18,93 +18,127 @@ import android.widget.Toast;
 
 public class MainActivity extends AppCompatActivity {
 
-    TextView tvOutputCurrency,tvOutputCurrencyValue, tvInputCurrency;
+    TextView tvOutputCurrency,tvOutputCurrencyValue, tvInputCurrency,tvSavedCurrency;
     EditText etInputCurrencyValue;
     SharedPreferences sharedPreferences;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_main);
-        Log.d(Constants.TAG, "onCreate: ");
 
-        tvOutputCurrency = (TextView) findViewById(R.id.tvOutputCurrency);
-        tvOutputCurrencyValue = (TextView) findViewById(R.id.tvOutputCurrencyValue);
-        tvInputCurrency = (TextView) findViewById(R.id.tvInputCurrency);
-        etInputCurrencyValue = (EditText) findViewById(R.id.etCurrencyAmount);
-        tvOutputCurrencyValue.setText("0");
+        boolean tabletSize = getResources().getBoolean(R.bool.isTablet);
+        if (tabletSize) {
+            setContentView(R.layout.activity_main_tab);
+        } else {
+            setContentView(R.layout.activity_main);
+            Log.d(Constants.TAG, "onCreate: ");
 
-        sharedPreferences = getSharedPreferences(Constants.PREFERENCE_KEY, Context.MODE_PRIVATE);
+            tvOutputCurrency = (TextView) findViewById(R.id.tvOutputCurrency);
+            tvOutputCurrencyValue = (TextView) findViewById(R.id.tvOutputCurrencyValue);
+            tvInputCurrency = (TextView) findViewById(R.id.tvInputCurrency);
+            etInputCurrencyValue = (EditText) findViewById(R.id.etCurrencyAmount);
+            tvOutputCurrencyValue.setText("0");
+            tvSavedCurrency = (TextView) findViewById(R.id.tvSavedCurrency);
 
-        etInputCurrencyValue.addTextChangedListener(new TextWatcher() {
-            @Override
-            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+            sharedPreferences = getSharedPreferences(Constants.PREFERENCE_KEY, Context.MODE_PRIVATE);
 
-            }
+            etInputCurrencyValue.addTextChangedListener(new TextWatcher() {
+                @Override
+                public void beforeTextChanged(CharSequence s, int start, int count, int after) {
 
-            @Override
-            public void onTextChanged(CharSequence s, int start, int before, int count) {
-                if (!s.toString().equals("")) {
-                    double convertedAmount = Double.parseDouble(s.toString());
-                    double conversionVal = Double.parseDouble(sharedPreferences.getString(Constants.CONVERSION_RATE_KEY, ""));
-                    convertedAmount *= conversionVal;
-                    tvOutputCurrencyValue.setText(String.format("%.2f",convertedAmount));
-                } else {
-                    tvOutputCurrencyValue.setText("0");
                 }
-            }
 
-            @Override
-            public void afterTextChanged(Editable s) {
+                @Override
+                public void onTextChanged(CharSequence s, int start, int before, int count) {
+                    if (!s.toString().equals("")) {
+                        double convertedAmount = Double.parseDouble(s.toString());
+                        double conversionVal = Double.parseDouble(sharedPreferences.getString(Constants.CONVERSION_RATE_KEY, "0"));
+                        convertedAmount *= conversionVal;
+                        tvOutputCurrencyValue.setText(String.format("%.2f",convertedAmount));
 
-            }
-        });
+                    } else {
+                        tvOutputCurrencyValue.setText("0");
+                    }
+                }
+
+                @Override
+                public void afterTextChanged(Editable s) {
+
+                }
+            });
+        }
+
     }
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
-        MenuInflater menuInflater = getMenuInflater();
-        menuInflater.inflate(R.menu.main, menu);
-        return true;
+        boolean tabletSize = getResources().getBoolean(R.bool.isTablet);
+        if (tabletSize) {
+            return false;
+        } else {
+            MenuInflater menuInflater = getMenuInflater();
+            menuInflater.inflate(R.menu.main, menu);
+            return true;
+        }
+
     }
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-        switch (item.getItemId()) {
-            case R.id.menu_currencyvalues:
-                Intent intent = new Intent(MainActivity.this, CurrencyValueSaverActivity.class);
-                startActivityForResult(intent,1);
-                return true;
+        boolean tabletSize = getResources().getBoolean(R.bool.isTablet);
+        if (tabletSize) {
+            return super.onOptionsItemSelected(item);
+        } else {
+            switch (item.getItemId()) {
+                case R.id.menu_currencyvalues:
+                    Intent intent = new Intent(MainActivity.this, CurrencyValueSaverActivity.class);
+                    startActivityForResult(intent,1);
+                    return true;
 
-            default:
-                return super.onOptionsItemSelected(item);
+                default:
+                    return super.onOptionsItemSelected(item);
+            }
         }
+
     }
 
     @Override
     protected void onResume() {
         super.onResume();
 
-        if (!sharedPreferences.contains(Constants.INPUT_CURRENCY_KEY)) {
-            Toast.makeText(getApplicationContext(), "Please set value at first", Toast.LENGTH_SHORT).show();
-            Intent intent = new Intent(MainActivity.this, CurrencyValueSaverActivity.class);
-            startActivityForResult(intent,1);
+        boolean tabletSize = getResources().getBoolean(R.bool.isTablet);
+        if (!tabletSize) {
+            if (!sharedPreferences.contains(Constants.INPUT_CURRENCY_KEY)) {
+                Toast.makeText(getApplicationContext(), "Please set value at first", Toast.LENGTH_SHORT).show();
+                Intent intent = new Intent(MainActivity.this, CurrencyValueSaverActivity.class);
+                startActivityForResult(intent,1);
+            } else {
+                tvInputCurrency.setText(sharedPreferences.getString(Constants.INPUT_CURRENCY_KEY, ""));
+                tvOutputCurrency.setText(sharedPreferences.getString(Constants.OUTPUT_CURRENCY_KEY, ""));
+                tvSavedCurrency.setText("1 "+sharedPreferences.getString(Constants.INPUT_CURRENCY_KEY, "")+" = "+sharedPreferences.getString(Constants.CONVERSION_RATE_KEY, "")+" "+sharedPreferences.getString(Constants.OUTPUT_CURRENCY_KEY, ""));
+            }
+
+            Log.d(Constants.TAG, "onResume: ");
         } else {
-            tvInputCurrency.setText(sharedPreferences.getString(Constants.INPUT_CURRENCY_KEY, ""));
-            tvOutputCurrency.setText(sharedPreferences.getString(Constants.OUTPUT_CURRENCY_KEY, ""));
+
         }
 
-        Log.d(Constants.TAG, "onResume: ");
+
     }
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-        if (requestCode == 1) {
-            if (resultCode != RESULT_OK) {
-                finish();
+        boolean tabletSize = getResources().getBoolean(R.bool.isTablet);
+        if (!tabletSize) {
+            if (requestCode == 1) {
+                if (resultCode != RESULT_OK) {
+                    finish();
+                }
             }
+            Log.d(Constants.TAG, "onActivityResult: ");
         }
-        Log.d(Constants.TAG, "onActivityResult: ");
+
     }
 }
 
