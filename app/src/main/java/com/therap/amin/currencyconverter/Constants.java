@@ -6,8 +6,6 @@ package com.therap.amin.currencyconverter;
 public class Constants {
 
     public static final String PREFERENCE_KEY = "preferenceKey";
-    public static final String INPUT_CURRENCY_KEY ="inputCurrencyKey";
-    public static final String OUTPUT_CURRENCY_KEY = "outputCurrencyKey";
-    public static final String CONVERSION_RATE_KEY = "conversionRateKey";
     public static final String TAG = "ripon";
+    public static final String URL = "http://apilayer.net/api/live?access_key=5c8760d83a567fef5f68b248221150e2&currencies=USD,AUD,CAD,GBP,BDT&format=1";
 }

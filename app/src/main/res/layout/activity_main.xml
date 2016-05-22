@@ -31,11 +31,12 @@
                 android:text="From: "
                 />
 
-            <TextView
-                android:text="USD"
-                style="@style/CustomFontStyle"
-                android:id="@+id/tvInputCurrency"
-                />
+            <Spinner
+                android:layout_marginRight="20dp"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                style="@android:style/Widget.Holo.Light.Spinner"
+                android:id="@+id/spnFromCurrency" />
 
 
         </LinearLayout>
@@ -78,10 +79,12 @@
                 android:text="To: "
                 android:textSize="20sp" />
 
-            <TextView
-                android:text="BDT"
-                style="@style/CustomFontStyle"
-                android:id="@+id/tvOutputCurrency" />
+            <Spinner
+                android:layout_marginRight="20dp"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                style="@android:style/Widget.Holo.Light.Spinner"
+                android:id="@+id/spnToCurrency" />
         </LinearLayout>
 
         <TextView
@@ -114,14 +117,34 @@
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="New Text"
+            android:text="Select One"
             style="@style/CustomFontStyle"
             android:layout_gravity="center"
             android:layout_marginTop="20dp"
             android:id="@+id/tvSavedCurrency" />
 
+
+
     </LinearLayout>
 
+    <RadioGroup
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="20dp"
+        android:id="@+id/rgSource">
+        <RadioButton
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Use web fetched value"
+            android:checked="true"
+            android:id="@+id/rbWeb" />
+
+        <RadioButton
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Use own saved value"
+            android:id="@+id/rbOwn" />
+    </RadioGroup>
 
 
 </LinearLayout>

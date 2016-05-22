@@ -3,6 +3,7 @@
     <!-- Single menu item
          Set id, icon and Title for each menu item
     -->
+
     <item android:id="@+id/menu_currencyvalues"
 
         android:title="Currency Values" />
