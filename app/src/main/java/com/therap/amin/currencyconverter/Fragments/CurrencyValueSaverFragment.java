@@ -38,9 +38,8 @@ public class CurrencyValueSaverFragment extends Fragment {
     Button saveButton;
     EditText etConversionValue;
     SharedPreferences sharedPreferences;
-    Map<String, Double> values;
     FileProcessor fileProcessor;
-
+    TextView tvPresentCurrencyRelation;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -52,14 +51,13 @@ public class CurrencyValueSaverFragment extends Fragment {
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.currencyvaluesaver, container, false);
-        values = new HashMap<String, Double>();
         fileProcessor = new FileProcessor(getActivity());
-        values = fileProcessor.readFileAndProcess();
         availableCurrencies = getResources().getStringArray(R.array.currencies);
         inputCurrencySpinner = (Spinner) view.findViewById(R.id.spnLeftCurrency);
         outputCurrencySpinner = (Spinner) view.findViewById(R.id.spnRightCurrency);
         saveButton = (Button) view.findViewById(R.id.btnSave);
         etConversionValue = (EditText) view.findViewById(R.id.etRightCurrencyValue);
+        tvPresentCurrencyRelation = (TextView) view.findViewById(R.id.tvPresentCurrencyRelation);
 
         sharedPreferences = getActivity().getSharedPreferences(Constants.PREFERENCE_KEY, Context.MODE_PRIVATE);
 
@@ -71,12 +69,7 @@ public class CurrencyValueSaverFragment extends Fragment {
         inputCurrencySpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
             public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
-                String from = inputCurrencySpinner.getSelectedItem().toString();
-                String to = outputCurrencySpinner.getSelectedItem().toString();
-                Double v = values.get(from + to);
-                if (v != null) {
-                    etConversionValue.setText(v + "");
-                }
+                updateUI();
             }
 
             @Override
@@ -88,12 +81,7 @@ public class CurrencyValueSaverFragment extends Fragment {
         outputCurrencySpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
             public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
-                String from = inputCurrencySpinner.getSelectedItem().toString();
-                String to = outputCurrencySpinner.getSelectedItem().toString();
-                Double v = values.get(from + to);
-                if (v != null) {
-                    etConversionValue.setText(v + "");
-                }
+                updateUI();
             }
 
             @Override
@@ -114,7 +102,6 @@ public class CurrencyValueSaverFragment extends Fragment {
                     if (!inputCurrency.equals(outputCurrency)) {
                         sharedPreferences.edit().putString(inputCurrency + outputCurrency, etConversionValue.getText().toString()).apply();
                         Toast.makeText(getActivity(), "Set successfully", Toast.LENGTH_SHORT).show();
-
                     } else {
                         Toast.makeText(getActivity(), "You cant set " + inputCurrency + "->" + outputCurrency + " conversion value", Toast.LENGTH_LONG).show();
                     }
@@ -137,7 +124,7 @@ public class CurrencyValueSaverFragment extends Fragment {
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
-            case R.id.action_search:
+            case R.id.action_load:
                 FetchCurrencyValues fetchCurrencyValues = new FetchCurrencyValues(getActivity());
                 fetchCurrencyValues.fetch(Constants.URL);
                 return true;
@@ -145,5 +132,19 @@ public class CurrencyValueSaverFragment extends Fragment {
                 break;
         }
         return false;
+    }
+
+    public void updateUI() {
+        fileProcessor = new FileProcessor(getActivity());
+        String from = inputCurrencySpinner.getSelectedItem().toString();
+        String to = outputCurrencySpinner.getSelectedItem().toString();
+        Double conversionRate = fileProcessor.calculateConversionRate(from,to);
+
+        if (conversionRate != -1) {
+            tvPresentCurrencyRelation.setText(String.format("1 %s = %.2f %s",from,conversionRate,to));
+        } else {
+            tvPresentCurrencyRelation.setText(R.string.not_available);
+        }
+        etConversionValue.setText(sharedPreferences.getString(from + to, ""));
     }
 }

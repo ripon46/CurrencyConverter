@@ -83,7 +83,6 @@ public class FetchCurrencyValues {
             return total.toString();
         }
 
-        @TargetApi(Build.VERSION_CODES.KITKAT)
         @Override
         protected void onPostExecute(String s) {
             progressDialog.dismiss();
@@ -93,13 +92,6 @@ public class FetchCurrencyValues {
                 Toast.makeText(context, "Successfully Loaded", Toast.LENGTH_LONG).show();
                 FileProcessor fileProcessor = new FileProcessor(context);
                 fileProcessor.writeToFile(s);
-                Map<String, Double> values = fileProcessor.readFileAndProcess();
-                try {
-                    Field field = context.getClass().getField("values");
-                    field.set(context,values);
-                } catch (NoSuchFieldException | IllegalAccessException e) {
-                    e.printStackTrace();
-                }
             }
         }
     }

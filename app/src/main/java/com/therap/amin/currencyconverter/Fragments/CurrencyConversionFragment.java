@@ -32,30 +32,27 @@ public class CurrencyConversionFragment extends Fragment{
 
 
     String[] availableCurrencies;
-    TextView tvOutputCurrencyValue,tvSavedCurrency;
+    TextView tvOutputCurrencyValue,tvSavedCurrencyRate;
     EditText etInputCurrencyValue;
     Spinner fromCurrencySpinner,toCurrencySpinner;
-    public Map<String,Double> values;
     FileProcessor fileProcessor;
     SharedPreferences sharedPreferences;
     RadioGroup sourceRadioGroup;
     RadioButton webRadioButton,ownvalueRadioButton;
     String selectedSource = "web";
+    ArrayAdapter<String> inputCurrencyAdapter,outputCurrencyAdapter;
 
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.activity_main,container,false);
 
-        values = new HashMap<String, Double>();
         fileProcessor = new FileProcessor(getActivity());
         sharedPreferences = getActivity().getSharedPreferences(Constants.PREFERENCE_KEY, Context.MODE_PRIVATE);
 
         sourceRadioGroup = (RadioGroup) view.findViewById(R.id.rgSource);
         webRadioButton = (RadioButton) view.findViewById(R.id.rbWeb);
         ownvalueRadioButton = (RadioButton) view.findViewById(R.id.rbOwn);
-
-        values = fileProcessor.readFileAndProcess();
 
         sourceRadioGroup.setOnCheckedChangeListener(new RadioGroup.OnCheckedChangeListener() {
             @Override
@@ -80,11 +77,18 @@ public class CurrencyConversionFragment extends Fragment{
         fromCurrencySpinner = (Spinner) view.findViewById(R.id.spnFromCurrency);
         toCurrencySpinner = (Spinner) view.findViewById(R.id.spnToCurrency);
 
-        ArrayAdapter<String> inputCurrencyAdapter = new ArrayAdapter<String>(getActivity(), android.R.layout.simple_spinner_item, availableCurrencies);
+        inputCurrencyAdapter = new ArrayAdapter<String>(getActivity(), android.R.layout.simple_spinner_item, availableCurrencies);
         fromCurrencySpinner.setAdapter(inputCurrencyAdapter);
-        ArrayAdapter<String> outputCurrencyAdapter = new ArrayAdapter<String>(getActivity(), android.R.layout.simple_spinner_item, availableCurrencies);
+        outputCurrencyAdapter = new ArrayAdapter<String>(getActivity(), android.R.layout.simple_spinner_item, availableCurrencies);
         toCurrencySpinner.setAdapter(outputCurrencyAdapter);
 
+
+        if (sharedPreferences.contains(Constants.LAST_SAVED_FROM_CURRENCY_KEY)) {
+            String lastSavedFromCurrency = sharedPreferences.getString(Constants.LAST_SAVED_FROM_CURRENCY_KEY,"");
+            String lastSavedToCurrency = sharedPreferences.getString(Constants.LAST_SAVED_TO_CURRENCY_KEY,"");
+            fromCurrencySpinner.setSelection(inputCurrencyAdapter.getPosition(lastSavedFromCurrency));
+            toCurrencySpinner.setSelection(outputCurrencyAdapter.getPosition(lastSavedToCurrency));
+        }
 
         fromCurrencySpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
@@ -110,7 +114,7 @@ public class CurrencyConversionFragment extends Fragment{
             }
         });
 
-        tvSavedCurrency = (TextView) view.findViewById(R.id.tvSavedCurrency);
+        tvSavedCurrencyRate = (TextView) view.findViewById(R.id.tvSavedCurrency);
         etInputCurrencyValue.addTextChangedListener(new TextWatcher() {
             @Override
             public void beforeTextChanged(CharSequence s, int start, int count, int after) {
@@ -123,18 +127,17 @@ public class CurrencyConversionFragment extends Fragment{
                     String from = fromCurrencySpinner.getSelectedItem().toString();
                     String to = toCurrencySpinner.getSelectedItem().toString();
                     double conversionVal = 0;
-                    String val = null;
                     if (selectedSource.equals("own")) {
-                        val = sharedPreferences.getString(from+to,null);
+                        String val = sharedPreferences.getString(from + to, null);
                         if (val != null) {
                             conversionVal = Double.parseDouble(val);
                         }
-                    } else if (values.containsKey(from+to)){
-                        conversionVal = values.get(from+to);
+                    } else if (fileProcessor.calculateConversionRate(from,to) != -1) {
+                        conversionVal = fileProcessor.calculateConversionRate(from,to);
                     }
                     double convertedAmount = Double.parseDouble(s.toString());
                     convertedAmount *= conversionVal;
-                    tvOutputCurrencyValue.setText(String.format("%.2f",convertedAmount));
+                    tvOutputCurrencyValue.setText(String.format("%.2f", convertedAmount));
                 } else {
                     tvOutputCurrencyValue.setText("0");
                 }
@@ -154,18 +157,28 @@ public class CurrencyConversionFragment extends Fragment{
         String to = toCurrencySpinner.getSelectedItem().toString();
 
         fileProcessor = new FileProcessor(getActivity());
-        values = fileProcessor.readFileAndProcess();
-        Double valueFromWeb = null;
-        String valueFromPreference = sharedPreferences.getString(from+to,null);
-        if (valueFromPreference != null && selectedSource.equals("own")) {
-            valueFromWeb = Double.parseDouble(valueFromPreference);
-        } else if (selectedSource.equals("web")){
-            valueFromWeb = values.get(from+to);
+        Double conversionRate = null;
+        if (selectedSource.equals("own")) {
+            String valueFromPreference = sharedPreferences.getString(from + to, null);
+            if (valueFromPreference != null) conversionRate = Double.parseDouble(valueFromPreference);
+        } else if (selectedSource.equals("web") && fileProcessor.calculateConversionRate(from,to) != -1) {
+            conversionRate = fileProcessor.calculateConversionRate(from,to);
         }
-        if (valueFromWeb != null) {
-            tvSavedCurrency.setText("1 "+from+" = "+valueFromWeb+" "+to);
+        if (conversionRate != null) {
+            tvSavedCurrencyRate.setText(String.format("1 %s = %.2f %s",from,conversionRate,to));
+            if (!etInputCurrencyValue.getText().toString().equals("")) {
+                conversionRate *= Double.parseDouble(etInputCurrencyValue.getText().toString());
+                tvOutputCurrencyValue.setText(String.format("%.2f", conversionRate));
+            }
         } else {
-            tvSavedCurrency.setText("Not Set");
+            tvSavedCurrencyRate.setText(R.string.not_available);
         }
+    }
+
+    @Override
+    public void onDestroy() {
+        sharedPreferences.edit().putString(Constants.LAST_SAVED_FROM_CURRENCY_KEY,fromCurrencySpinner.getSelectedItem().toString()).apply();
+        sharedPreferences.edit().putString(Constants.LAST_SAVED_TO_CURRENCY_KEY,toCurrencySpinner.getSelectedItem().toString()).apply();
+        super.onDestroy();
     }
 }

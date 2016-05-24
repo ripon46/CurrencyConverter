@@ -15,7 +15,8 @@
 
     <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
+        android:layout_height="0dp"
+        android:layout_weight="3"
         android:orientation="horizontal">
 
         <LinearLayout
@@ -45,7 +46,6 @@
             android:id="@+id/input_layout_password"
             android:layout_width="0dp"
             android:layout_weight="1"
-            android:layout_gravity="center"
             android:layout_height="wrap_content">
 
             <EditText
@@ -63,8 +63,9 @@
 
     <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="32dp">
+        android:layout_height="0dp"
+        android:layout_weight="3"
+        >
 
         <LinearLayout
             android:layout_width="0dp"
@@ -93,7 +94,6 @@
             android:layout_height="wrap_content"
             android:text="0"
             android:textSize="20sp"
-            android:layout_gravity="center"
             android:freezesText="true"
             android:id="@+id/tvOutputCurrencyValue" />
 
@@ -102,14 +102,14 @@
 
     <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="40dp"
+        android:layout_height="0dp"
+        android:layout_weight="3"
         android:orientation="vertical">
 
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Saved Conversion Value: "
+            android:text="Saved Conversion Rate: "
             android:textSize="17sp"
             android:layout_gravity="center"
             android:id="@+id/textView3" />
@@ -129,8 +129,8 @@
 
     <RadioGroup
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="20dp"
+        android:layout_height="0dp"
+        android:layout_weight="3"
         android:id="@+id/rgSource">
         <RadioButton
             android:layout_width="wrap_content"

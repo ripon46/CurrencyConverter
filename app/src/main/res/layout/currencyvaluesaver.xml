@@ -2,7 +2,7 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:layout_marginTop="30dp"
+    android:layout_marginTop="10dp"
     android:layout_marginLeft="10dp"
     android:layout_marginRight="10dp"
     android:orientation="vertical">
@@ -22,7 +22,7 @@
             android:layout_margin="10dp"
             android:layout_weight="6"
             android:gravity="center"
-            android:text="INPUT CURRENCY "
+            android:text="@string/input_currency"
             android:textSize="18sp" />
 
         <Spinner
@@ -33,7 +33,6 @@
             android:layout_gravity="center_horizontal"
             android:layout_weight="5"
             android:gravity="center"
-            android:textAlignment="center"
             android:textSize="20sp" />
 
         <LinearLayout
@@ -62,7 +61,7 @@
             android:layout_margin="10dp"
             android:layout_weight="6"
             android:gravity="center"
-            android:text="OUTPUT CURRENCY"
+            android:text="@string/output_currency"
             android:textSize="18sp" />
 
 
@@ -73,8 +72,7 @@
             android:layout_height="wrap_content"
             android:layout_gravity="center"
             android:layout_weight="5"
-            android:gravity="center"
-            android:textAlignment="center" />
+            android:gravity="center" />
 
         <LinearLayout
             android:layout_width="0dp"
@@ -85,6 +83,14 @@
 
 
     </LinearLayout>
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="20dp"
+        android:text="New Text"
+        android:gravity="center_horizontal"
+        android:id="@+id/tvPresentCurrencyRelation" />
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -98,22 +104,24 @@
 
         </LinearLayout>
 
+
+
         <android.support.design.widget.TextInputLayout
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_gravity="center"
 
-            android:layout_marginTop="40dp"
+            android:layout_marginTop="30dp"
             android:layout_marginLeft="20dp"
             android:layout_marginRight="20dp"
-            android:layout_marginBottom="30dp"
+            android:layout_marginBottom="10dp"
             android:layout_weight="2">
 
             <EditText
                 android:id="@+id/etRightCurrencyValue"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:hint="Enter Conversion Value"
+                android:hint="@string/convertsion_rate_hint"
                 android:inputType="numberDecimal" />
 
         </android.support.design.widget.TextInputLayout>
@@ -126,6 +134,8 @@
         </LinearLayout>
 
     </LinearLayout>
+
+
 
 
     <Button
