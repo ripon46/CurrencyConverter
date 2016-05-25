@@ -7,6 +7,7 @@ import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextWatcher;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -28,24 +29,24 @@ import java.util.Map;
 /**
  * Created by amin on 5/10/16.
  */
-public class CurrencyConversionFragment extends Fragment{
+public class CurrencyConversionFragment extends Fragment {
 
 
     String[] availableCurrencies;
-    TextView tvOutputCurrencyValue,tvSavedCurrencyRate;
+    TextView tvOutputCurrencyValue, tvSavedCurrencyRate;
     EditText etInputCurrencyValue;
-    Spinner fromCurrencySpinner,toCurrencySpinner;
+    Spinner fromCurrencySpinner, toCurrencySpinner;
     FileProcessor fileProcessor;
     SharedPreferences sharedPreferences;
     RadioGroup sourceRadioGroup;
-    RadioButton webRadioButton,ownvalueRadioButton;
+    RadioButton webRadioButton, ownvalueRadioButton;
     String selectedSource = "web";
-    ArrayAdapter<String> inputCurrencyAdapter,outputCurrencyAdapter;
+    ArrayAdapter<String> inputCurrencyAdapter, outputCurrencyAdapter;
 
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        View view = inflater.inflate(R.layout.activity_main,container,false);
+        View view = inflater.inflate(R.layout.activity_main, container, false);
 
         fileProcessor = new FileProcessor(getActivity());
         sharedPreferences = getActivity().getSharedPreferences(Constants.PREFERENCE_KEY, Context.MODE_PRIVATE);
@@ -84,8 +85,8 @@ public class CurrencyConversionFragment extends Fragment{
 
 
         if (sharedPreferences.contains(Constants.LAST_SAVED_FROM_CURRENCY_KEY)) {
-            String lastSavedFromCurrency = sharedPreferences.getString(Constants.LAST_SAVED_FROM_CURRENCY_KEY,"");
-            String lastSavedToCurrency = sharedPreferences.getString(Constants.LAST_SAVED_TO_CURRENCY_KEY,"");
+            String lastSavedFromCurrency = sharedPreferences.getString(Constants.LAST_SAVED_FROM_CURRENCY_KEY, "");
+            String lastSavedToCurrency = sharedPreferences.getString(Constants.LAST_SAVED_TO_CURRENCY_KEY, "");
             fromCurrencySpinner.setSelection(inputCurrencyAdapter.getPosition(lastSavedFromCurrency));
             toCurrencySpinner.setSelection(outputCurrencyAdapter.getPosition(lastSavedToCurrency));
         }
@@ -132,8 +133,8 @@ public class CurrencyConversionFragment extends Fragment{
                         if (val != null) {
                             conversionVal = Double.parseDouble(val);
                         }
-                    } else if (fileProcessor.calculateConversionRate(from,to) != -1) {
-                        conversionVal = fileProcessor.calculateConversionRate(from,to);
+                    } else if (fileProcessor.calculateConversionRate(from, to) != -1) {
+                        conversionVal = fileProcessor.calculateConversionRate(from, to);
                     }
                     double convertedAmount = Double.parseDouble(s.toString());
                     convertedAmount *= conversionVal;
@@ -152,7 +153,7 @@ public class CurrencyConversionFragment extends Fragment{
         return view;
     }
 
-    public void updateUI () {
+    public void updateUI() {
         String from = fromCurrencySpinner.getSelectedItem().toString();
         String to = toCurrencySpinner.getSelectedItem().toString();
 
@@ -160,12 +161,13 @@ public class CurrencyConversionFragment extends Fragment{
         Double conversionRate = null;
         if (selectedSource.equals("own")) {
             String valueFromPreference = sharedPreferences.getString(from + to, null);
-            if (valueFromPreference != null) conversionRate = Double.parseDouble(valueFromPreference);
-        } else if (selectedSource.equals("web") && fileProcessor.calculateConversionRate(from,to) != -1) {
-            conversionRate = fileProcessor.calculateConversionRate(from,to);
+            if (valueFromPreference != null)
+                conversionRate = Double.parseDouble(valueFromPreference);
+        } else if (selectedSource.equals("web") && fileProcessor.calculateConversionRate(from, to) != -1) {
+            conversionRate = fileProcessor.calculateConversionRate(from, to);
         }
         if (conversionRate != null) {
-            tvSavedCurrencyRate.setText(String.format("1 %s = %.2f %s",from,conversionRate,to));
+            tvSavedCurrencyRate.setText(String.format("1 %s = %.2f %s", from, conversionRate, to));
             if (!etInputCurrencyValue.getText().toString().equals("")) {
                 conversionRate *= Double.parseDouble(etInputCurrencyValue.getText().toString());
                 tvOutputCurrencyValue.setText(String.format("%.2f", conversionRate));
@@ -175,10 +177,13 @@ public class CurrencyConversionFragment extends Fragment{
         }
     }
 
+
     @Override
-    public void onDestroy() {
-        sharedPreferences.edit().putString(Constants.LAST_SAVED_FROM_CURRENCY_KEY,fromCurrencySpinner.getSelectedItem().toString()).apply();
-        sharedPreferences.edit().putString(Constants.LAST_SAVED_TO_CURRENCY_KEY,toCurrencySpinner.getSelectedItem().toString()).apply();
-        super.onDestroy();
+    public void onPause() {
+        Log.d(Constants.TAG, "onPause: ");
+        sharedPreferences.edit().putString(Constants.LAST_SAVED_FROM_CURRENCY_KEY, fromCurrencySpinner.getSelectedItem().toString()).apply();
+        sharedPreferences.edit().putString(Constants.LAST_SAVED_TO_CURRENCY_KEY, toCurrencySpinner.getSelectedItem().toString()).apply();
+
+        super.onPause();
     }
 }
