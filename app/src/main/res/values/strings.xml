@@ -21,4 +21,9 @@
     <string name="navigation_drawer_close">Close navigation drawer</string>
 
     <string name="action_settings">Settings</string>
+    <string name="convertsion_rate_hint">Enter Conversion Rate</string>
+    <string name="output_currency">OUTPUT CURRENCY</string>
+    <string name="input_currency">INPUT CURRENCY</string>
+    <string name="load">Load From Web</string>
+    <string name="not_available">Not Available</string>
 </resources>
