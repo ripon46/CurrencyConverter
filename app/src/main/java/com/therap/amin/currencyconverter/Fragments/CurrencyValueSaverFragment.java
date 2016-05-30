@@ -1,6 +1,7 @@
 package com.therap.amin.currencyconverter.Fragments;
 
 import android.app.Fragment;
+import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -20,46 +21,62 @@ import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.google.inject.Inject;
+import com.loopj.android.http.JsonHttpResponseHandler;
 import com.therap.amin.currencyconverter.Constants;
 import com.therap.amin.currencyconverter.FetchCurrencyValues;
 import com.therap.amin.currencyconverter.FileProcessor;
 import com.therap.amin.currencyconverter.R;
 
+import org.json.JSONObject;
+
 import java.util.HashMap;
 import java.util.Map;
+
+import cz.msebera.android.httpclient.Header;
+import roboguice.RoboGuice;
+import roboguice.fragment.RoboFragment;
+import roboguice.inject.InjectResource;
+import roboguice.inject.InjectView;
 
 /**
  * Created by amin on 5/10/16.
  */
-public class CurrencyValueSaverFragment extends Fragment {
+public class CurrencyValueSaverFragment extends RoboFragment {
 
+    @InjectResource(R.array.currencies)
     String[] availableCurrencies;
-    Spinner inputCurrencySpinner, outputCurrencySpinner;
+
+    @InjectView(R.id.spnLeftCurrency)
+    Spinner inputCurrencySpinner;
+
+    @InjectView(R.id.spnRightCurrency)
+    Spinner outputCurrencySpinner;
+
+    @InjectView(R.id.btnSave)
     Button saveButton;
+
+    @InjectView(R.id.etRightCurrencyValue)
     EditText etConversionValue;
-    SharedPreferences sharedPreferences;
+
+    @Inject
     FileProcessor fileProcessor;
+
+    @InjectView(R.id.tvPresentCurrencyRelation)
     TextView tvPresentCurrencyRelation;
+
+    SharedPreferences sharedPreferences;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setHasOptionsMenu(true);
+        RoboGuice.getInjector(getActivity()).injectMembersWithoutViews(this);
     }
 
-    @Nullable
-    @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        View view = inflater.inflate(R.layout.currencyvaluesaver, container, false);
-        fileProcessor = new FileProcessor(getActivity());
-        availableCurrencies = getResources().getStringArray(R.array.currencies);
-        inputCurrencySpinner = (Spinner) view.findViewById(R.id.spnLeftCurrency);
-        outputCurrencySpinner = (Spinner) view.findViewById(R.id.spnRightCurrency);
-        saveButton = (Button) view.findViewById(R.id.btnSave);
-        etConversionValue = (EditText) view.findViewById(R.id.etRightCurrencyValue);
-        tvPresentCurrencyRelation = (TextView) view.findViewById(R.id.tvPresentCurrencyRelation);
-
-        sharedPreferences = getActivity().getSharedPreferences(Constants.PREFERENCE_KEY, Context.MODE_PRIVATE);
+    public void onViewCreated(final View view, final Bundle savedInstanceState) {
+        super.onViewCreated(view, savedInstanceState);
+        RoboGuice.getInjector(getActivity()).injectViewMembers(this);
 
         ArrayAdapter<String> inputCurrencyAdapter = new ArrayAdapter<String>(getActivity(), android.R.layout.simple_spinner_item, availableCurrencies);
         inputCurrencySpinner.setAdapter(inputCurrencyAdapter);
@@ -110,6 +127,13 @@ public class CurrencyValueSaverFragment extends Fragment {
                 }
             }
         });
+    }
+
+    @Nullable
+    @Override
+    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+        View view = inflater.inflate(R.layout.currencyvaluesaver, container, false);
+        sharedPreferences = getActivity().getSharedPreferences(Constants.PREFERENCE_KEY, Context.MODE_PRIVATE);
         return view;
     }
 
@@ -125,8 +149,28 @@ public class CurrencyValueSaverFragment extends Fragment {
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
             case R.id.action_load:
-                FetchCurrencyValues fetchCurrencyValues = new FetchCurrencyValues(getActivity());
-                fetchCurrencyValues.fetch(Constants.URL);
+                final ProgressDialog progressDialog = new ProgressDialog(getActivity());
+                progressDialog.setMessage("Loading...");
+                progressDialog.show();
+                FetchCurrencyValues.get(Constants.URL, null, new JsonHttpResponseHandler() {
+                    @Override
+                    public void onSuccess(int statusCode, Header[] headers, JSONObject response) {
+                        progressDialog.dismiss();
+                        if (response.toString().isEmpty()) {
+                            Toast.makeText(getActivity(), "Failed Loading Currency Values", Toast.LENGTH_LONG).show();
+                        } else {
+                            Toast.makeText(getActivity(), "Successfully Loaded", Toast.LENGTH_LONG).show();
+                            fileProcessor.writeToFile(response.toString());
+                            updateUI();
+                        }
+                    }
+
+                    @Override
+                    public void onFailure(int statusCode, Header[] headers, String responseString, Throwable throwable) {
+                        progressDialog.dismiss();
+                        Toast.makeText(getActivity(), "Failed Loading Currency Values", Toast.LENGTH_LONG).show();
+                    }
+                });
                 return true;
             default:
                 break;
@@ -135,13 +179,12 @@ public class CurrencyValueSaverFragment extends Fragment {
     }
 
     public void updateUI() {
-        fileProcessor = new FileProcessor(getActivity());
         String from = inputCurrencySpinner.getSelectedItem().toString();
         String to = outputCurrencySpinner.getSelectedItem().toString();
-        Double conversionRate = fileProcessor.calculateConversionRate(from,to);
+        Double conversionRate = fileProcessor.calculateConversionRate(from, to);
 
         if (conversionRate != -1) {
-            tvPresentCurrencyRelation.setText(String.format("1 %s = %.2f %s",from,conversionRate,to));
+            tvPresentCurrencyRelation.setText(String.format("1 %s = %.2f %s", from, conversionRate, to));
         } else {
             tvPresentCurrencyRelation.setText(R.string.not_available);
         }

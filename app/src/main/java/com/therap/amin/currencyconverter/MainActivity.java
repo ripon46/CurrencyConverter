@@ -3,7 +3,6 @@ package com.therap.amin.currencyconverter;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
-import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextWatcher;
@@ -20,42 +19,71 @@ import android.widget.RadioGroup;
 import android.widget.Spinner;
 import android.widget.TextView;
 
-import java.lang.reflect.Field;
+import com.google.inject.Inject;
+
+import roboguice.RoboGuice;
+import roboguice.activity.RoboActionBarActivity;
+import roboguice.inject.InjectResource;
+import roboguice.inject.InjectView;
 
 
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends RoboActionBarActivity {
 
+    @InjectResource(R.array.currencies)
     String[] availableCurrencies;
-    TextView tvOutputCurrencyValue, tvSavedCurrencyRate;
-    EditText etInputCurrencyValue;
-    Spinner fromCurrencySpinner, toCurrencySpinner;
-    FileProcessor fileProcessor;
-    SharedPreferences sharedPreferences;
-    RadioGroup sourceRadioGroup;
-    RadioButton webRadioButton, ownvalueRadioButton;
-    String selectedSource = "web";
-    boolean tabletSize;
-    ArrayAdapter<String> inputCurrencyAdapter, outputCurrencyAdapter;
 
+    @InjectView(R.id.tvOutputCurrencyValue)
+    TextView tvOutputCurrencyValue;
+
+    @InjectView(R.id.tvSavedCurrency)
+    TextView tvSavedCurrencyRate;
+
+    @InjectView(R.id.etCurrencyAmount)
+    EditText etInputCurrencyValue;
+
+    @InjectView(R.id.spnFromCurrency)
+    Spinner fromCurrencySpinner;
+
+    @InjectView(R.id.spnToCurrency)
+    Spinner toCurrencySpinner;
+
+    @InjectView(R.id.rgSource)
+    RadioGroup sourceRadioGroup;
+
+    @InjectView(R.id.rbWeb)
+    RadioButton webRadioButton;
+
+    @InjectView(R.id.rbOwn)
+    RadioButton ownvalueRadioButton;
+
+    @Inject
+    FileProcessor fileProcessor;
+
+    @InjectResource(R.bool.isTablet)
+    boolean tabletSize;
+
+    SharedPreferences sharedPreferences;
+    String selectedSource = "web";
+    ArrayAdapter<String> inputCurrencyAdapter;
+    ArrayAdapter<String> outputCurrencyAdapter;
+
+
+    static {
+        RoboGuice.setUseAnnotationDatabases(false);
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        tabletSize = getResources().getBoolean(R.bool.isTablet);
         if (tabletSize) {
             setContentView(R.layout.activity_main_tab);
         } else {
             setContentView(R.layout.activity_main);
             Log.d(Constants.TAG, "onCreate: ");
-            fileProcessor = new FileProcessor(MainActivity.this);
             sharedPreferences = getSharedPreferences(Constants.PREFERENCE_KEY, Context.MODE_PRIVATE);
 
-            sourceRadioGroup = (RadioGroup) findViewById(R.id.rgSource);
-            webRadioButton = (RadioButton) findViewById(R.id.rbWeb);
-            ownvalueRadioButton = (RadioButton) findViewById(R.id.rbOwn);
-
-            if (fileProcessor.values.isEmpty() && !sharedPreferences.contains("USDBDT")) {
+            if (fileProcessor.values.isEmpty() && sharedPreferences.getAll().isEmpty()) {
                 Intent intent = new Intent(MainActivity.this, CurrencyValueSaverActivity.class);
                 startActivityForResult(intent, 1);
             }
@@ -74,14 +102,7 @@ public class MainActivity extends AppCompatActivity {
                 }
             });
 
-
-            availableCurrencies = getResources().getStringArray(R.array.currencies);
-            tvOutputCurrencyValue = (TextView) findViewById(R.id.tvOutputCurrencyValue);
-            etInputCurrencyValue = (EditText) findViewById(R.id.etCurrencyAmount);
             tvOutputCurrencyValue.setText("0");
-            tvSavedCurrencyRate = (TextView) findViewById(R.id.tvSavedCurrency);
-            fromCurrencySpinner = (Spinner) findViewById(R.id.spnFromCurrency);
-            toCurrencySpinner = (Spinner) findViewById(R.id.spnToCurrency);
 
             inputCurrencyAdapter = new ArrayAdapter<String>(this, android.R.layout.simple_spinner_item, availableCurrencies);
             fromCurrencySpinner.setAdapter(inputCurrencyAdapter);
@@ -129,20 +150,7 @@ public class MainActivity extends AppCompatActivity {
                 @Override
                 public void onTextChanged(CharSequence s, int start, int before, int count) {
                     if (!s.toString().equals("")) {
-                        String from = fromCurrencySpinner.getSelectedItem().toString();
-                        String to = toCurrencySpinner.getSelectedItem().toString();
-                        double conversionVal = 0;
-                        if (selectedSource.equals("own")) {
-                            String val = sharedPreferences.getString(from + to, null);
-                            if (val != null) {
-                                conversionVal = Double.parseDouble(val);
-                            }
-                        } else if (fileProcessor.calculateConversionRate(from, to) != -1) {
-                            conversionVal = fileProcessor.calculateConversionRate(from, to);
-                        }
-                        double convertedAmount = Double.parseDouble(s.toString());
-                        convertedAmount *= conversionVal;
-                        tvOutputCurrencyValue.setText(String.format("%.2f", convertedAmount));
+                        updateUI();
                     } else {
                         tvOutputCurrencyValue.setText("0");
                     }
@@ -199,6 +207,7 @@ public class MainActivity extends AppCompatActivity {
                     fromCurrencySpinner.setSelection(inputCurrencyAdapter.getPosition(data.getStringExtra(Constants.FROM_CURRENCY_KEY)));
                     toCurrencySpinner.setSelection(outputCurrencyAdapter.getPosition(data.getStringExtra(Constants.TO_CURRENCY_KEY)));
                     updateUI();
+
                 }
             }
             Log.d(Constants.TAG, "onActivityResult: ");
@@ -208,8 +217,6 @@ public class MainActivity extends AppCompatActivity {
     public void updateUI() {
         String from = fromCurrencySpinner.getSelectedItem().toString();
         String to = toCurrencySpinner.getSelectedItem().toString();
-
-        fileProcessor = new FileProcessor(MainActivity.this);
         Double conversionRate = null;
         if (selectedSource.equals("own")) {
             String valueFromPreference = sharedPreferences.getString(from + to, null);
@@ -226,6 +233,7 @@ public class MainActivity extends AppCompatActivity {
             }
         } else {
             tvSavedCurrencyRate.setText(R.string.not_available);
+            tvOutputCurrencyValue.setText("0");
         }
     }
 

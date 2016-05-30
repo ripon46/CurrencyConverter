@@ -2,11 +2,11 @@ package com.therap.amin.currencyconverter;
 
 import android.content.Context;
 import android.util.Log;
+import com.google.inject.Inject;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 import java.io.BufferedReader;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -27,6 +27,7 @@ public class FileProcessor {
     Map<String, Double> values;
     DecimalFormat numberFormat;
 
+    @Inject
     public FileProcessor(Context context) {
         this.context = context;
         values = new HashMap<String, Double>();
@@ -83,13 +84,10 @@ public class FileProcessor {
                 while ((receiveString = bufferedReader.readLine()) != null) {
                     stringBuilder.append(receiveString);
                 }
-
                 inputStream.close();
                 contentOfFile = stringBuilder.toString();
 
             }
-        } catch (FileNotFoundException e) {
-            e.printStackTrace();
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -99,6 +97,7 @@ public class FileProcessor {
 
 
     public double calculateConversionRate(String fromCurrency, String toCurrency) {
+        values = readFileAndProcess();
         if (values.containsKey(fromCurrency) || values.containsKey(toCurrency)) {
             if (fromCurrency.equals("USD")) {
                 return values.get(toCurrency);
