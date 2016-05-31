@@ -68,10 +68,6 @@ public class MainActivity extends RoboActionBarActivity {
     ArrayAdapter<String> outputCurrencyAdapter;
 
 
-    static {
-        RoboGuice.setUseAnnotationDatabases(false);
-    }
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);

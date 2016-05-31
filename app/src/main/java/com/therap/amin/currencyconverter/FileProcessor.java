@@ -3,6 +3,8 @@ package com.therap.amin.currencyconverter;
 import android.content.Context;
 import android.util.Log;
 import com.google.inject.Inject;
+import com.google.inject.Singleton;
+
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -21,6 +23,7 @@ import java.util.Map;
 /**
  * Created by amin on 5/18/16.
  */
+@Singleton
 public class FileProcessor {
 
     Context context;
@@ -109,5 +112,4 @@ public class FileProcessor {
         }
         return -1;
     }
-
 }

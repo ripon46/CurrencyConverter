@@ -7,7 +7,7 @@ import com.loopj.android.http.RequestParams;
 /**
  * Created by amin on 5/17/16.
  */
-public class FetchCurrencyValues {
+public class FetchCurrencyRates {
 
     private static AsyncHttpClient client = new AsyncHttpClient();
 

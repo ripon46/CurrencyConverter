@@ -1,9 +1,7 @@
 package com.therap.amin.currencyconverter.Fragments;
 
-import android.app.Fragment;
 import android.app.ProgressDialog;
 import android.content.Context;
-import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
@@ -24,14 +22,11 @@ import android.widget.Toast;
 import com.google.inject.Inject;
 import com.loopj.android.http.JsonHttpResponseHandler;
 import com.therap.amin.currencyconverter.Constants;
-import com.therap.amin.currencyconverter.FetchCurrencyValues;
+import com.therap.amin.currencyconverter.FetchCurrencyRates;
 import com.therap.amin.currencyconverter.FileProcessor;
 import com.therap.amin.currencyconverter.R;
 
 import org.json.JSONObject;
-
-import java.util.HashMap;
-import java.util.Map;
 
 import cz.msebera.android.httpclient.Header;
 import roboguice.RoboGuice;
@@ -152,7 +147,7 @@ public class CurrencyValueSaverFragment extends RoboFragment {
                 final ProgressDialog progressDialog = new ProgressDialog(getActivity());
                 progressDialog.setMessage("Loading...");
                 progressDialog.show();
-                FetchCurrencyValues.get(Constants.URL, null, new JsonHttpResponseHandler() {
+                FetchCurrencyRates.get(Constants.URL, null, new JsonHttpResponseHandler() {
                     @Override
                     public void onSuccess(int statusCode, Header[] headers, JSONObject response) {
                         progressDialog.dismiss();

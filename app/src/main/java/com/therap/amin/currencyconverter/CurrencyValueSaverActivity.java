@@ -6,7 +6,6 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
-import android.support.v7.app.AppCompatActivity;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
@@ -25,7 +24,6 @@ import com.loopj.android.http.JsonHttpResponseHandler;
 import org.json.JSONObject;
 
 import cz.msebera.android.httpclient.Header;
-import roboguice.RoboGuice;
 import roboguice.activity.RoboActionBarActivity;
 import roboguice.inject.ContentView;
 import roboguice.inject.InjectResource;
@@ -56,15 +54,16 @@ public class CurrencyValueSaverActivity extends RoboActionBarActivity {
     TextView tvPresentCurrencyRelation;
     ArrayAdapter<String> inputCurrencyAdapter, outputCurrencyAdapter;
 
-    static {
-        RoboGuice.setUseAnnotationDatabases(false);
-    }
+    @Inject
+    ShowConversionRate showConversionRate;
+
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setTitle("Set Currency Rates");
         sharedPreferences = getSharedPreferences(Constants.PREFERENCE_KEY, Context.MODE_PRIVATE);
+
 
         inputCurrencyAdapter = new ArrayAdapter<String>(this, android.R.layout.simple_spinner_item, availableCurrencies);
         inputCurrencySpinner.setAdapter(inputCurrencyAdapter);
@@ -159,7 +158,7 @@ public class CurrencyValueSaverActivity extends RoboActionBarActivity {
                 final ProgressDialog progressDialog = new ProgressDialog(CurrencyValueSaverActivity.this);
                 progressDialog.setMessage("Loading...");
                 progressDialog.show();
-                FetchCurrencyValues.get(Constants.URL, null, new JsonHttpResponseHandler() {
+                FetchCurrencyRates.get(Constants.URL, null, new JsonHttpResponseHandler() {
                     @Override
                     public void onSuccess(int statusCode, Header[] headers, JSONObject response) {
                         progressDialog.dismiss();
@@ -169,6 +168,9 @@ public class CurrencyValueSaverActivity extends RoboActionBarActivity {
                             Toast.makeText(CurrencyValueSaverActivity.this, "Successfully Loaded", Toast.LENGTH_LONG).show();
                             FileProcessor fileProcessor = new FileProcessor(CurrencyValueSaverActivity.this);
                             fileProcessor.writeToFile(response.toString());
+
+                            //showConversionRate.showRate("USD","BDT");
+                            showConversionRate.showRate("USD","BDT");
                         }
                     }
 
