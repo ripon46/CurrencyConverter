@@ -6,8 +6,6 @@ package com.therap.amin.currencyconverter;
 public class Constants {
 
     public static final String PREFERENCE_KEY = "preferenceKey";
-    public static final String FROM_CURRENCY_KEY = "from";
-    public static final String TO_CURRENCY_KEY = "to";
     public static final String LAST_SAVED_FROM_CURRENCY_KEY = "lastfromcurrency";
     public static final String LAST_SAVED_TO_CURRENCY_KEY = "lasttocurrency";
     public static final String TAG = "ripon";

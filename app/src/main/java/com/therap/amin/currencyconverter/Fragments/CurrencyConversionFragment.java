@@ -1,13 +1,11 @@
 package com.therap.amin.currencyconverter.Fragments;
 
-import android.app.Fragment;
+
 import android.content.Context;
-import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextWatcher;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -24,10 +22,6 @@ import com.therap.amin.currencyconverter.Constants;
 import com.therap.amin.currencyconverter.FileProcessor;
 import com.therap.amin.currencyconverter.R;
 
-import java.util.HashMap;
-import java.util.Map;
-
-import roboguice.RoboGuice;
 import roboguice.fragment.RoboFragment;
 import roboguice.inject.InjectResource;
 import roboguice.inject.InjectView;
@@ -37,39 +31,48 @@ import roboguice.inject.InjectView;
  */
 public class CurrencyConversionFragment extends RoboFragment {
 
-    @InjectResource(R.array.currencies) String[] availableCurrencies;
-    @InjectView(R.id.tvOutputCurrencyValue) TextView tvOutputCurrencyValue;
-    @InjectView(R.id.tvSavedCurrency) TextView tvSavedCurrencyRate;
-    @InjectView(R.id.etCurrencyAmount) EditText etInputCurrencyValue;
-    @InjectView(R.id.spnFromCurrency) Spinner fromCurrencySpinner;
-    @InjectView(R.id.spnToCurrency) Spinner toCurrencySpinner;
-    @Inject FileProcessor fileProcessor;
-    @InjectView(R.id.rgSource) RadioGroup sourceRadioGroup;
-    @InjectView(R.id.rbWeb) RadioButton webRadioButton;
-    @InjectView(R.id.rbOwn) RadioButton ownvalueRadioButton;
+    @InjectResource(R.array.currencies)
+    String[] availableCurrencies;
+
+    @InjectView(R.id.tvOutputCurrencyValue)
+    TextView tvOutputCurrencyValue;
+
+    @InjectView(R.id.tvSavedCurrency)
+    TextView tvSavedCurrencyRate;
+
+    @InjectView(R.id.etCurrencyAmount)
+    EditText etInputCurrencyValue;
+
+    @InjectView(R.id.spnFromCurrency)
+    Spinner fromCurrencySpinner;
+
+    @InjectView(R.id.spnToCurrency)
+    Spinner toCurrencySpinner;
+
+    @Inject
+    FileProcessor fileProcessor;
+
+    @InjectView(R.id.rgSource)
+    RadioGroup sourceRadioGroup;
+
+    @InjectView(R.id.rbWeb)
+    RadioButton webRadioButton;
+
+    @InjectView(R.id.rbOwn)
+    RadioButton ownvalueRadioButton;
 
     String selectedSource = "web";
     ArrayAdapter<String> inputCurrencyAdapter;
     ArrayAdapter<String> outputCurrencyAdapter;
     SharedPreferences sharedPreferences;
 
-
-    @Override
-    public void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        RoboGuice.getInjector(getActivity()).injectMembers(this);
-    }
-
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        return inflater.inflate(R.layout.activity_main, container, false);
+        return inflater.inflate(R.layout.fragment_currency_conversion, container, false);
     }
 
     public void onViewCreated(final View view, final Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
-        RoboGuice.getInjector(getActivity()).injectViewMembers(this);
-
-        tvOutputCurrencyValue.setText("0");
 
         inputCurrencyAdapter = new ArrayAdapter<String>(getActivity(), android.R.layout.simple_spinner_item, availableCurrencies);
         fromCurrencySpinner.setAdapter(inputCurrencyAdapter);
@@ -168,17 +171,8 @@ public class CurrencyConversionFragment extends RoboFragment {
             tvSavedCurrencyRate.setText(R.string.not_available);
             tvOutputCurrencyValue.setText("0");
         }
-
-    }
-
-
-    @Override
-    public void onPause() {
-        Log.d(Constants.TAG, "onPause: ");
         sharedPreferences.edit().putString(Constants.LAST_SAVED_FROM_CURRENCY_KEY, fromCurrencySpinner.getSelectedItem().toString()).apply();
         sharedPreferences.edit().putString(Constants.LAST_SAVED_TO_CURRENCY_KEY, toCurrencySpinner.getSelectedItem().toString()).apply();
-
-        super.onPause();
     }
 
 }

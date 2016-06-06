@@ -21,14 +21,6 @@
             </intent-filter>
         </activity>
 
-        <activity android:name=".CurrencyValueSaverActivity"
-            android:configChanges="screenLayout|screenSize">
-            <intent-filter>
-                <action android:name="android.intent.action.CURRENCYVALUESAVER" />
-
-                <category android:name="android.intent.category.DEFAULT" />
-            </intent-filter>
-        </activity>
         <meta-data android:name="roboguice.modules"
             android:value="com.therap.amin.currencyconverter.CurrencyConversionModule" />
     </application>

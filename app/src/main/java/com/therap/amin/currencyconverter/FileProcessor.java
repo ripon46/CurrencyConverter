@@ -3,7 +3,6 @@ package com.therap.amin.currencyconverter;
 import android.content.Context;
 import android.util.Log;
 import com.google.inject.Inject;
-import com.google.inject.Singleton;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -19,15 +18,17 @@ import java.text.DecimalFormat;
 import java.util.HashMap;
 import java.util.Map;
 
+import roboguice.inject.ContextSingleton;
+
 
 /**
  * Created by amin on 5/18/16.
  */
-@Singleton
+@ContextSingleton
 public class FileProcessor {
 
     Context context;
-    Map<String, Double> values;
+    public Map<String, Double> values;
     DecimalFormat numberFormat;
 
     @Inject
@@ -44,11 +45,11 @@ public class FileProcessor {
             outputStreamWriter.write(data);
             outputStreamWriter.close();
             values = readFileAndProcess();
-            Method method = context.getClass().getMethod("updateUI");
+            Method method = context.getClass().getMethod("callUpdateUI");
             method.invoke(context);
         } catch (IOException e) {
             Log.e("Exception", "File write failed: " + e.toString());
-        } catch (NoSuchMethodException | InvocationTargetException | IllegalAccessException e) {
+        } catch (NoSuchMethodException | IllegalAccessException | InvocationTargetException e) {
             e.printStackTrace();
         }
     }
