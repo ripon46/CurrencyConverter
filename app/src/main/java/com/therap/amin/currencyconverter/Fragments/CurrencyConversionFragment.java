@@ -61,9 +61,19 @@ public class CurrencyConversionFragment extends RoboFragment {
     @InjectView(R.id.rbOwn)
     RadioButton ownvalueRadioButton;
 
-    String selectedSource = "web";
+    @InjectResource(R.string.own)
+    String ownSavedValue;
+
+    @InjectResource(R.string.web)
+    String webFetchedValue;
+
+    @Inject
+    String selectedSource;
+
     ArrayAdapter<String> inputCurrencyAdapter;
     ArrayAdapter<String> outputCurrencyAdapter;
+
+    @Inject
     SharedPreferences sharedPreferences;
 
     @Override
@@ -74,12 +84,12 @@ public class CurrencyConversionFragment extends RoboFragment {
     public void onViewCreated(final View view, final Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
+
+        selectedSource = webFetchedValue;
         inputCurrencyAdapter = new ArrayAdapter<String>(getActivity(), android.R.layout.simple_spinner_item, availableCurrencies);
         fromCurrencySpinner.setAdapter(inputCurrencyAdapter);
         outputCurrencyAdapter = new ArrayAdapter<String>(getActivity(), android.R.layout.simple_spinner_item, availableCurrencies);
         toCurrencySpinner.setAdapter(outputCurrencyAdapter);
-
-        sharedPreferences = getActivity().getSharedPreferences(Constants.PREFERENCE_KEY, Context.MODE_PRIVATE);
 
         if (sharedPreferences.contains(Constants.LAST_SAVED_FROM_CURRENCY_KEY)) {
             String lastSavedFromCurrency = sharedPreferences.getString(Constants.LAST_SAVED_FROM_CURRENCY_KEY, "");
@@ -139,9 +149,9 @@ public class CurrencyConversionFragment extends RoboFragment {
                 int id = sourceRadioGroup.getCheckedRadioButtonId();
 
                 if (id == webRadioButton.getId()) {
-                    selectedSource = "web";
+                    selectedSource = webFetchedValue;
                 } else if (id == ownvalueRadioButton.getId()) {
-                    selectedSource = "own";
+                    selectedSource = ownSavedValue;
                 }
                 updateUI();
             }
@@ -154,11 +164,11 @@ public class CurrencyConversionFragment extends RoboFragment {
         String to = toCurrencySpinner.getSelectedItem().toString();
 
         Double conversionRate = null;
-        if (selectedSource.equals("own")) {
+        if (selectedSource.equals(ownSavedValue)) {
             String valueFromPreference = sharedPreferences.getString(from + to, null);
             if (valueFromPreference != null)
                 conversionRate = Double.parseDouble(valueFromPreference);
-        } else if (selectedSource.equals("web") && fileProcessor.calculateConversionRate(from, to) != -1) {
+        } else if (selectedSource.equals(webFetchedValue) && fileProcessor.calculateConversionRate(from, to) != -1) {
             conversionRate = fileProcessor.calculateConversionRate(from, to);
         }
         if (conversionRate != null) {
@@ -174,5 +184,4 @@ public class CurrencyConversionFragment extends RoboFragment {
         sharedPreferences.edit().putString(Constants.LAST_SAVED_FROM_CURRENCY_KEY, fromCurrencySpinner.getSelectedItem().toString()).apply();
         sharedPreferences.edit().putString(Constants.LAST_SAVED_TO_CURRENCY_KEY, toCurrencySpinner.getSelectedItem().toString()).apply();
     }
-
 }

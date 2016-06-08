@@ -26,4 +26,6 @@
     <string name="input_currency">INPUT CURRENCY</string>
     <string name="load">Load From Web</string>
     <string name="not_available">Not Available</string>
+    <string name="web">Web</string>
+    <string name="own">Own</string>
 </resources>

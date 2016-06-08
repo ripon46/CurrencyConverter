@@ -2,10 +2,12 @@ package com.therap.amin.currencyconverter;
 
 
 import android.app.ProgressDialog;
+import android.os.Handler;
+import android.os.Looper;
+import android.os.Message;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentTransaction;
-import android.content.Context;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.util.Log;
@@ -15,13 +17,11 @@ import android.view.MenuItem;
 import android.widget.Toast;
 
 import com.google.inject.Inject;
-import com.loopj.android.http.JsonHttpResponseHandler;
 import com.therap.amin.currencyconverter.Fragments.CurrencyConversionFragment;
 import com.therap.amin.currencyconverter.Fragments.CurrencyValueSaverFragment;
 
 import org.json.JSONObject;
 
-import cz.msebera.android.httpclient.Header;
 import roboguice.activity.RoboActionBarActivity;
 import roboguice.fragment.RoboFragment;
 import roboguice.inject.InjectResource;
@@ -36,7 +36,9 @@ public class MainActivity extends RoboActionBarActivity {
     boolean tabletSize;
     Menu menu;
 
+    @Inject
     SharedPreferences sharedPreferences;
+
     CurrencyConversionFragment currencyConversionFragment;
     CurrencyValueSaverFragment currencyValueSaverFragment;
 
@@ -53,7 +55,6 @@ public class MainActivity extends RoboActionBarActivity {
             setContentView(R.layout.activity_main);
 
             Log.d(Constants.TAG, "onCreate: ");
-            sharedPreferences = getSharedPreferences(Constants.PREFERENCE_KEY, Context.MODE_PRIVATE);
             replaceFragment(currencyConversionFragment);
             if (fileProcessor.values.isEmpty() && sharedPreferences.getAll().isEmpty()) {
                 replaceFragment(currencyValueSaverFragment);
@@ -91,25 +92,22 @@ public class MainActivity extends RoboActionBarActivity {
                 final ProgressDialog progressDialog = new ProgressDialog(MainActivity.this);
                 progressDialog.setMessage("Loading...");
                 progressDialog.show();
-                FetchCurrencyRates.get(Constants.URL, null, new JsonHttpResponseHandler() {
-
+                Handler handler = new Handler(Looper.getMainLooper()) {
                     @Override
-                    public void onSuccess(int statusCode, Header[] headers, JSONObject response) {
+                    public void handleMessage(Message msg) {
                         progressDialog.dismiss();
-                        if (response.toString().isEmpty()) {
-                            Toast.makeText(MainActivity.this, "Failed Loading Currency Values", Toast.LENGTH_LONG).show();
-                        } else {
-                            Toast.makeText(MainActivity.this, "Successfully Loaded", Toast.LENGTH_LONG).show();
+                        if (msg.what == Constants.SUCCESS) {
+                            JSONObject response = (JSONObject) msg.obj;
+                            Toast.makeText(MainActivity.this, "Successfully Loaded ", Toast.LENGTH_LONG).show();
                             fileProcessor.writeToFile(response.toString());
+                            callUpdateUI();
+                        } else {
+                            Toast.makeText(MainActivity.this, "Failed Loading Currency Rates", Toast.LENGTH_LONG).show();
                         }
                     }
-
-                    @Override
-                    public void onFailure(int statusCode, Header[] headers, String responseString, Throwable throwable) {
-                        progressDialog.dismiss();
-                        Toast.makeText(MainActivity.this, "Failed Loading Currency Values", Toast.LENGTH_LONG).show();
-                    }
-                });
+                };
+                CurrencyConverterService service = new CurrencyConverterService(handler);
+                service.retreiveData(Constants.URL, null);
                 return true;
             default:
                 return super.onOptionsItemSelected(item);
@@ -160,11 +158,11 @@ public class MainActivity extends RoboActionBarActivity {
             RoboFragment fragment = (RoboFragment) getSupportFragmentManager().findFragmentById(R.id.currencyconversionfragment);
             ((CurrencyConversionFragment) fragment).updateUI();
             fragment = (RoboFragment) getSupportFragmentManager().findFragmentById(R.id.valuesaverfragment);
-            ((CurrencyValueSaverFragment)fragment).updateUI();
+            ((CurrencyValueSaverFragment) fragment).updateUI();
         } else {
             RoboFragment fragment = (RoboFragment) getSupportFragmentManager().findFragmentById(R.id.fragmentcontainer);
             if (fragment instanceof CurrencyValueSaverFragment) {
-                ((CurrencyValueSaverFragment)fragment).updateUI();
+                ((CurrencyValueSaverFragment) fragment).updateUI();
             } else {
                 ((CurrencyConversionFragment) fragment).updateUI();
             }

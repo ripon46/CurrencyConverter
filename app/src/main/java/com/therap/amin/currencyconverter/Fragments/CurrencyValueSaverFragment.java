@@ -54,7 +54,9 @@ public class CurrencyValueSaverFragment extends RoboFragment {
     @InjectResource(R.bool.isTablet)
     boolean tabletSize;
 
+    @Inject
     SharedPreferences sharedPreferences;
+
     ArrayAdapter<String> inputCurrencyAdapter;
     ArrayAdapter<String> outputCurrencyAdapter;
 
@@ -71,8 +73,6 @@ public class CurrencyValueSaverFragment extends RoboFragment {
         inputCurrencySpinner.setAdapter(inputCurrencyAdapter);
         outputCurrencyAdapter = new ArrayAdapter<String>(getActivity(), android.R.layout.simple_spinner_item, availableCurrencies);
         outputCurrencySpinner.setAdapter(outputCurrencyAdapter);
-
-        sharedPreferences = getActivity().getSharedPreferences(Constants.PREFERENCE_KEY, Context.MODE_PRIVATE);
 
         if (sharedPreferences.contains(Constants.LAST_SAVED_FROM_CURRENCY_KEY)) {
             String lastSavedFromCurrency = sharedPreferences.getString(Constants.LAST_SAVED_FROM_CURRENCY_KEY, "");

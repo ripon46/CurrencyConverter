@@ -45,12 +45,8 @@ public class FileProcessor {
             outputStreamWriter.write(data);
             outputStreamWriter.close();
             values = readFileAndProcess();
-            Method method = context.getClass().getMethod("callUpdateUI");
-            method.invoke(context);
         } catch (IOException e) {
             Log.e("Exception", "File write failed: " + e.toString());
-        } catch (NoSuchMethodException | IllegalAccessException | InvocationTargetException e) {
-            e.printStackTrace();
         }
     }
 
