@@ -2,11 +2,12 @@ package com.therap.amin.currencyconverter;
 
 import android.content.Context;
 import android.util.Log;
+import com.google.inject.Inject;
+
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 import java.io.BufferedReader;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -17,16 +18,20 @@ import java.text.DecimalFormat;
 import java.util.HashMap;
 import java.util.Map;
 
+import roboguice.inject.ContextSingleton;
+
 
 /**
  * Created by amin on 5/18/16.
  */
+@ContextSingleton
 public class FileProcessor {
 
     Context context;
-    Map<String, Double> values;
+    public Map<String, Double> values;
     DecimalFormat numberFormat;
 
+    @Inject
     public FileProcessor(Context context) {
         this.context = context;
         values = new HashMap<String, Double>();
@@ -40,12 +45,8 @@ public class FileProcessor {
             outputStreamWriter.write(data);
             outputStreamWriter.close();
             values = readFileAndProcess();
-            Method method = context.getClass().getMethod("updateUI");
-            method.invoke(context);
         } catch (IOException e) {
             Log.e("Exception", "File write failed: " + e.toString());
-        } catch (NoSuchMethodException | InvocationTargetException | IllegalAccessException e) {
-            e.printStackTrace();
         }
     }
 
@@ -83,13 +84,10 @@ public class FileProcessor {
                 while ((receiveString = bufferedReader.readLine()) != null) {
                     stringBuilder.append(receiveString);
                 }
-
                 inputStream.close();
                 contentOfFile = stringBuilder.toString();
 
             }
-        } catch (FileNotFoundException e) {
-            e.printStackTrace();
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -99,6 +97,7 @@ public class FileProcessor {
 
 
     public double calculateConversionRate(String fromCurrency, String toCurrency) {
+        values = readFileAndProcess();
         if (values.containsKey(fromCurrency) || values.containsKey(toCurrency)) {
             if (fromCurrency.equals("USD")) {
                 return values.get(toCurrency);
@@ -110,5 +109,4 @@ public class FileProcessor {
         }
         return -1;
     }
-
 }
