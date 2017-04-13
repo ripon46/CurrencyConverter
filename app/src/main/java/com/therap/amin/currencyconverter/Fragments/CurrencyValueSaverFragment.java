@@ -1,9 +1,9 @@
 package com.therap.amin.currencyconverter.Fragments;
 
-import android.content.Context;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
+import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -15,50 +15,38 @@ import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.google.inject.Inject;
 import com.therap.amin.currencyconverter.Constants;
-import com.therap.amin.currencyconverter.FileProcessor;
 import com.therap.amin.currencyconverter.MainActivity;
 import com.therap.amin.currencyconverter.R;
+import com.therap.amin.currencyconverter.component.DaggerFileProcessorComponent;
+import com.therap.amin.currencyconverter.module.FileProcessorModule;
+import com.therap.amin.currencyconverter.service.FileProcessor;
 
-import roboguice.fragment.RoboFragment;
-import roboguice.inject.InjectResource;
-import roboguice.inject.InjectView;
+import javax.inject.Inject;
+
 
 /**
- * Created by amin on 5/10/16.
+ * @author Ripon
  */
-public class CurrencyValueSaverFragment extends RoboFragment {
+public class CurrencyValueSaverFragment extends Fragment {
 
-    @InjectResource(R.array.currencies)
-    String[] availableCurrencies;
+    private String[] availableCurrencies;
+    private boolean tabletSize;
 
-    @InjectView(R.id.spnLeftCurrency)
-    Spinner inputCurrencySpinner;
+    private Spinner inputCurrencySpinner;
+    private Spinner outputCurrencySpinner;
+    private Button saveButton;
+    private EditText etConversionValue;
+    private TextView tvPresentCurrencyRelation;
 
-    @InjectView(R.id.spnRightCurrency)
-    Spinner outputCurrencySpinner;
-
-    @InjectView(R.id.btnSave)
-    Button saveButton;
-
-    @InjectView(R.id.etRightCurrencyValue)
-    EditText etConversionValue;
+    ArrayAdapter<String> inputCurrencyAdapter;
+    ArrayAdapter<String> outputCurrencyAdapter;
 
     @Inject
     FileProcessor fileProcessor;
 
-    @InjectView(R.id.tvPresentCurrencyRelation)
-    TextView tvPresentCurrencyRelation;
 
-    @InjectResource(R.bool.isTablet)
-    boolean tabletSize;
-
-    @Inject
     SharedPreferences sharedPreferences;
-
-    ArrayAdapter<String> inputCurrencyAdapter;
-    ArrayAdapter<String> outputCurrencyAdapter;
 
     @Nullable
     @Override
@@ -68,6 +56,18 @@ public class CurrencyValueSaverFragment extends RoboFragment {
 
     public void onViewCreated(final View view, final Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
+
+        DaggerFileProcessorComponent.builder().fileProcessorModule(new FileProcessorModule(getContext())).build().inject(this);
+
+        inputCurrencySpinner = (Spinner) view.findViewById(R.id.spnLeftCurrency);
+        outputCurrencySpinner = (Spinner) view.findViewById(R.id.spnRightCurrency);
+        saveButton = (Button) view.findViewById(R.id.btnSave);
+        etConversionValue = (EditText) view.findViewById(R.id.etRightCurrencyValue);
+        tvPresentCurrencyRelation = (TextView) view.findViewById(R.id.tvPresentCurrencyRelation);
+
+        availableCurrencies = getContext().getResources().getStringArray(R.array.currencies);
+        tabletSize = getContext().getResources().getBoolean(R.bool.isTablet);
+
 
         inputCurrencyAdapter = new ArrayAdapter<String>(getActivity(), android.R.layout.simple_spinner_item, availableCurrencies);
         inputCurrencySpinner.setAdapter(inputCurrencyAdapter);

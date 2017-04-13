@@ -2,42 +2,48 @@ package com.therap.amin.currencyconverter;
 
 
 import android.app.ProgressDialog;
+import android.content.SharedPreferences;
+import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
 import android.os.Message;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentTransaction;
-import android.content.SharedPreferences;
-import android.os.Bundle;
+import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.widget.Toast;
 
-import com.google.inject.Inject;
 import com.therap.amin.currencyconverter.Fragments.CurrencyConversionFragment;
 import com.therap.amin.currencyconverter.Fragments.CurrencyValueSaverFragment;
+import com.therap.amin.currencyconverter.component.DaggerCurrencyConversionComponent;
+import com.therap.amin.currencyconverter.component.DaggerFileProcessorComponent;
+import com.therap.amin.currencyconverter.module.CurrencyConversionModule;
+import com.therap.amin.currencyconverter.module.FileProcessorModule;
+import com.therap.amin.currencyconverter.service.CurrencyConverterService;
+import com.therap.amin.currencyconverter.service.FileProcessor;
 
 import org.json.JSONObject;
 
-import roboguice.activity.RoboActionBarActivity;
-import roboguice.fragment.RoboFragment;
-import roboguice.inject.InjectResource;
+import javax.inject.Inject;
 
-
-public class MainActivity extends RoboActionBarActivity {
+public class MainActivity extends AppCompatActivity {
 
     @Inject
     FileProcessor fileProcessor;
 
-    @InjectResource(R.bool.isTablet)
     boolean tabletSize;
     Menu menu;
 
-    @Inject
     SharedPreferences sharedPreferences;
+
+    @Inject
+    CurrencyConverterService service;
+
+    Handler handler;
 
     CurrencyConversionFragment currencyConversionFragment;
     CurrencyValueSaverFragment currencyValueSaverFragment;
@@ -46,8 +52,11 @@ public class MainActivity extends RoboActionBarActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
+        tabletSize = getResources().getBoolean(R.bool.isTablet);
         currencyConversionFragment = new CurrencyConversionFragment();
         currencyValueSaverFragment = new CurrencyValueSaverFragment();
+
+        DaggerFileProcessorComponent.builder().fileProcessorModule(new FileProcessorModule(this)).build().inject(this);
 
         if (tabletSize) {
             setContentView(R.layout.activity_main_tab);
@@ -72,7 +81,7 @@ public class MainActivity extends RoboActionBarActivity {
             item.setVisible(false);
             this.invalidateOptionsMenu();
         } else {
-            RoboFragment fragment = (RoboFragment) getSupportFragmentManager().findFragmentById(R.id.fragmentcontainer);
+            Fragment fragment = getSupportFragmentManager().findFragmentById(R.id.fragmentcontainer);
             setMenus(fragment);
             this.invalidateOptionsMenu();
         }
@@ -92,7 +101,7 @@ public class MainActivity extends RoboActionBarActivity {
                 final ProgressDialog progressDialog = new ProgressDialog(MainActivity.this);
                 progressDialog.setMessage("Loading...");
                 progressDialog.show();
-                Handler handler = new Handler(Looper.getMainLooper()) {
+                handler = new Handler(Looper.getMainLooper()) {
                     @Override
                     public void handleMessage(Message msg) {
                         progressDialog.dismiss();
@@ -106,7 +115,8 @@ public class MainActivity extends RoboActionBarActivity {
                         }
                     }
                 };
-                CurrencyConverterService service = new CurrencyConverterService(handler);
+
+                DaggerCurrencyConversionComponent.builder().currencyConversionModule(new CurrencyConversionModule(handler)).build().inject(this);
                 service.retreiveData(Constants.URL, null);
                 return true;
             default:
@@ -114,7 +124,7 @@ public class MainActivity extends RoboActionBarActivity {
         }
     }
 
-    public void replaceFragment(RoboFragment fragment) {
+    public void replaceFragment(Fragment fragment) {
         FragmentManager fragmentManager = getSupportFragmentManager();
         FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
         fragmentTransaction.replace(R.id.fragmentcontainer, fragment);
@@ -140,7 +150,7 @@ public class MainActivity extends RoboActionBarActivity {
         }
     }
 
-    public void setMenus(RoboFragment fragment) {
+    public void setMenus(Fragment fragment) {
         MenuItem loadRates = menu.findItem(R.id.load_currency_rates);
         MenuItem setRates = menu.findItem(R.id.set_currency_rates);
         if (fragment instanceof CurrencyValueSaverFragment) {
@@ -155,12 +165,12 @@ public class MainActivity extends RoboActionBarActivity {
     public void callUpdateUI() {
         Log.d(Constants.TAG, "callUpdateUI: ");
         if (tabletSize) {
-            RoboFragment fragment = (RoboFragment) getSupportFragmentManager().findFragmentById(R.id.currencyconversionfragment);
+            Fragment fragment = getSupportFragmentManager().findFragmentById(R.id.currencyconversionfragment);
             ((CurrencyConversionFragment) fragment).updateUI();
-            fragment = (RoboFragment) getSupportFragmentManager().findFragmentById(R.id.valuesaverfragment);
+            fragment = getSupportFragmentManager().findFragmentById(R.id.valuesaverfragment);
             ((CurrencyValueSaverFragment) fragment).updateUI();
         } else {
-            RoboFragment fragment = (RoboFragment) getSupportFragmentManager().findFragmentById(R.id.fragmentcontainer);
+            Fragment fragment = getSupportFragmentManager().findFragmentById(R.id.fragmentcontainer);
             if (fragment instanceof CurrencyValueSaverFragment) {
                 ((CurrencyValueSaverFragment) fragment).updateUI();
             } else {

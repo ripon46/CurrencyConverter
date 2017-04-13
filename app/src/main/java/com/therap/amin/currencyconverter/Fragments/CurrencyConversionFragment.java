@@ -1,9 +1,9 @@
 package com.therap.amin.currencyconverter.Fragments;
 
 
-import android.content.Context;
 import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.support.v4.app.Fragment;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.view.LayoutInflater;
@@ -17,63 +17,37 @@ import android.widget.RadioGroup;
 import android.widget.Spinner;
 import android.widget.TextView;
 
-import com.google.inject.Inject;
 import com.therap.amin.currencyconverter.Constants;
-import com.therap.amin.currencyconverter.FileProcessor;
 import com.therap.amin.currencyconverter.R;
+import com.therap.amin.currencyconverter.component.DaggerFileProcessorComponent;
+import com.therap.amin.currencyconverter.module.FileProcessorModule;
+import com.therap.amin.currencyconverter.service.FileProcessor;
 
-import roboguice.fragment.RoboFragment;
-import roboguice.inject.InjectResource;
-import roboguice.inject.InjectView;
+import javax.inject.Inject;
+
 
 /**
- * Created by amin on 5/10/16.
+ * @author Ripon
  */
-public class CurrencyConversionFragment extends RoboFragment {
+public class CurrencyConversionFragment extends Fragment {
 
-    @InjectResource(R.array.currencies)
-    String[] availableCurrencies;
+    private String ownSavedValue;
+    private String webFetchedValue;
 
-    @InjectView(R.id.tvOutputCurrencyValue)
-    TextView tvOutputCurrencyValue;
-
-    @InjectView(R.id.tvSavedCurrency)
-    TextView tvSavedCurrencyRate;
-
-    @InjectView(R.id.etCurrencyAmount)
-    EditText etInputCurrencyValue;
-
-    @InjectView(R.id.spnFromCurrency)
-    Spinner fromCurrencySpinner;
-
-    @InjectView(R.id.spnToCurrency)
-    Spinner toCurrencySpinner;
+    private TextView tvOutputCurrencyValue;
+    private TextView tvSavedCurrencyRate;
+    private EditText etInputCurrencyValue;
+    private Spinner fromCurrencySpinner;
+    private Spinner toCurrencySpinner;
+    private RadioGroup sourceRadioGroup;
+    private RadioButton webRadioButton;
+    private RadioButton ownvalueRadioButton;
 
     @Inject
     FileProcessor fileProcessor;
 
-    @InjectView(R.id.rgSource)
-    RadioGroup sourceRadioGroup;
+    private String selectedSource;
 
-    @InjectView(R.id.rbWeb)
-    RadioButton webRadioButton;
-
-    @InjectView(R.id.rbOwn)
-    RadioButton ownvalueRadioButton;
-
-    @InjectResource(R.string.own)
-    String ownSavedValue;
-
-    @InjectResource(R.string.web)
-    String webFetchedValue;
-
-    @Inject
-    String selectedSource;
-
-    ArrayAdapter<String> inputCurrencyAdapter;
-    ArrayAdapter<String> outputCurrencyAdapter;
-
-    @Inject
     SharedPreferences sharedPreferences;
 
     @Override
@@ -85,10 +59,25 @@ public class CurrencyConversionFragment extends RoboFragment {
         super.onViewCreated(view, savedInstanceState);
 
 
+        DaggerFileProcessorComponent.builder().fileProcessorModule(new FileProcessorModule(getContext())).build().inject(this);
+
+        tvOutputCurrencyValue = (TextView) view.findViewById(R.id.tvOutputCurrencyValue);
+        tvSavedCurrencyRate = (TextView) view.findViewById(R.id.tvSavedCurrency);
+        etInputCurrencyValue = (EditText) view.findViewById(R.id.etCurrencyAmount);
+        fromCurrencySpinner = (Spinner) view.findViewById(R.id.spnFromCurrency);
+        toCurrencySpinner = (Spinner) view.findViewById(R.id.spnToCurrency);
+        sourceRadioGroup = (RadioGroup) view.findViewById(R.id.rgSource);
+        webRadioButton = (RadioButton) view.findViewById(R.id.rbWeb);
+        ownvalueRadioButton = (RadioButton) view.findViewById(R.id.rbOwn);
+
+        String[] availableCurrencies = getContext().getResources().getStringArray(R.array.currencies);
+        ownSavedValue = getString(R.string.own);
+        webFetchedValue = getString(R.string.web);
+
         selectedSource = webFetchedValue;
-        inputCurrencyAdapter = new ArrayAdapter<String>(getActivity(), android.R.layout.simple_spinner_item, availableCurrencies);
+        ArrayAdapter<String> inputCurrencyAdapter = new ArrayAdapter<String>(getActivity(), android.R.layout.simple_spinner_item, availableCurrencies);
         fromCurrencySpinner.setAdapter(inputCurrencyAdapter);
-        outputCurrencyAdapter = new ArrayAdapter<String>(getActivity(), android.R.layout.simple_spinner_item, availableCurrencies);
+        ArrayAdapter<String> outputCurrencyAdapter = new ArrayAdapter<String>(getActivity(), android.R.layout.simple_spinner_item, availableCurrencies);
         toCurrencySpinner.setAdapter(outputCurrencyAdapter);
 
         if (sharedPreferences.contains(Constants.LAST_SAVED_FROM_CURRENCY_KEY)) {
