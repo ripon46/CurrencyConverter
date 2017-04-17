@@ -16,6 +16,8 @@ import java.text.DecimalFormat;
 import java.util.HashMap;
 import java.util.Map;
 
+import javax.inject.Inject;
+
 
 /**
  * @author Ripon
@@ -26,6 +28,7 @@ public class FileProcessor {
     public Map<String, Double> values;
     DecimalFormat numberFormat;
 
+    @Inject
     public FileProcessor(Context context) {
         this.context = context;
         values = new HashMap<String, Double>();

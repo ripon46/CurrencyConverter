@@ -16,10 +16,12 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.therap.amin.currencyconverter.Constants;
-import com.therap.amin.currencyconverter.MainActivity;
+import com.therap.amin.currencyconverter.CurrencyConversionApplication;
+import com.therap.amin.currencyconverter.activity.MainActivity;
 import com.therap.amin.currencyconverter.R;
-import com.therap.amin.currencyconverter.component.DaggerFileProcessorComponent;
-import com.therap.amin.currencyconverter.module.FileProcessorModule;
+import com.therap.amin.currencyconverter.component.DaggerFragmentComponent;
+import com.therap.amin.currencyconverter.component.FragmentComponent;
+import com.therap.amin.currencyconverter.module.FragmentModule;
 import com.therap.amin.currencyconverter.service.FileProcessor;
 
 import javax.inject.Inject;
@@ -39,14 +41,29 @@ public class CurrencyValueSaverFragment extends Fragment {
     private EditText etConversionValue;
     private TextView tvPresentCurrencyRelation;
 
-    ArrayAdapter<String> inputCurrencyAdapter;
-    ArrayAdapter<String> outputCurrencyAdapter;
-
     @Inject
     FileProcessor fileProcessor;
 
-
+    @Inject
     SharedPreferences sharedPreferences;
+
+    @Inject
+    ArrayAdapter<String> inputCurrencyAdapter;
+
+    @Inject
+    ArrayAdapter<String> outputCurrencyAdapter;
+
+    private FragmentComponent fragmentComponent;
+
+    public FragmentComponent getFragmentComponent() {
+        if (fragmentComponent == null) {
+            fragmentComponent = DaggerFragmentComponent.builder()
+                    .applicationComponent(CurrencyConversionApplication.get(getContext()).getComponent())
+                    .fragmentModule(new FragmentModule(getContext()))
+                    .build();
+        }
+        return fragmentComponent;
+    }
 
     @Nullable
     @Override
@@ -57,7 +74,7 @@ public class CurrencyValueSaverFragment extends Fragment {
     public void onViewCreated(final View view, final Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
-        DaggerFileProcessorComponent.builder().fileProcessorModule(new FileProcessorModule(getContext())).build().inject(this);
+        getFragmentComponent().inject(this);
 
         inputCurrencySpinner = (Spinner) view.findViewById(R.id.spnLeftCurrency);
         outputCurrencySpinner = (Spinner) view.findViewById(R.id.spnRightCurrency);
@@ -68,10 +85,7 @@ public class CurrencyValueSaverFragment extends Fragment {
         availableCurrencies = getContext().getResources().getStringArray(R.array.currencies);
         tabletSize = getContext().getResources().getBoolean(R.bool.isTablet);
 
-
-        inputCurrencyAdapter = new ArrayAdapter<String>(getActivity(), android.R.layout.simple_spinner_item, availableCurrencies);
         inputCurrencySpinner.setAdapter(inputCurrencyAdapter);
-        outputCurrencyAdapter = new ArrayAdapter<String>(getActivity(), android.R.layout.simple_spinner_item, availableCurrencies);
         outputCurrencySpinner.setAdapter(outputCurrencyAdapter);
 
         if (sharedPreferences.contains(Constants.LAST_SAVED_FROM_CURRENCY_KEY)) {

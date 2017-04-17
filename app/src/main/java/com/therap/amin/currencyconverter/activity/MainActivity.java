@@ -1,4 +1,4 @@
-package com.therap.amin.currencyconverter;
+package com.therap.amin.currencyconverter.activity;
 
 
 import android.app.ProgressDialog;
@@ -17,18 +17,22 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.widget.Toast;
 
+import com.therap.amin.currencyconverter.Constants;
+import com.therap.amin.currencyconverter.CurrencyConversionApplication;
 import com.therap.amin.currencyconverter.Fragments.CurrencyConversionFragment;
 import com.therap.amin.currencyconverter.Fragments.CurrencyValueSaverFragment;
-import com.therap.amin.currencyconverter.component.DaggerCurrencyConversionComponent;
-import com.therap.amin.currencyconverter.component.DaggerFileProcessorComponent;
-import com.therap.amin.currencyconverter.module.CurrencyConversionModule;
-import com.therap.amin.currencyconverter.module.FileProcessorModule;
+import com.therap.amin.currencyconverter.R;
+import com.therap.amin.currencyconverter.component.ActivityComponent;
+import com.therap.amin.currencyconverter.component.DaggerActivityComponent;
 import com.therap.amin.currencyconverter.service.CurrencyConverterService;
 import com.therap.amin.currencyconverter.service.FileProcessor;
 
 import org.json.JSONObject;
 
+import java.util.ArrayList;
+
 import javax.inject.Inject;
+
 
 public class MainActivity extends AppCompatActivity {
 
@@ -38,25 +42,40 @@ public class MainActivity extends AppCompatActivity {
     boolean tabletSize;
     Menu menu;
 
+    @Inject
     SharedPreferences sharedPreferences;
 
     @Inject
     CurrencyConverterService service;
 
-    Handler handler;
+    private ActivityComponent activityComponent;
 
+    @Inject
     CurrencyConversionFragment currencyConversionFragment;
+
+    @Inject
     CurrencyValueSaverFragment currencyValueSaverFragment;
+
+    @Inject
+    ArrayList<Integer> integers;
+
+    public ActivityComponent getActivityComponent() {
+        if (activityComponent == null) {
+            activityComponent = DaggerActivityComponent.builder()
+                    .applicationComponent(CurrencyConversionApplication.get(this).getComponent())
+                    .build();
+        }
+        return activityComponent;
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
         tabletSize = getResources().getBoolean(R.bool.isTablet);
-        currencyConversionFragment = new CurrencyConversionFragment();
-        currencyValueSaverFragment = new CurrencyValueSaverFragment();
 
-        DaggerFileProcessorComponent.builder().fileProcessorModule(new FileProcessorModule(this)).build().inject(this);
+        getActivityComponent().inject(this);
+        Toast.makeText(getApplicationContext(), integers.size()+"", Toast.LENGTH_LONG).show();
 
         if (tabletSize) {
             setContentView(R.layout.activity_main_tab);
@@ -101,7 +120,8 @@ public class MainActivity extends AppCompatActivity {
                 final ProgressDialog progressDialog = new ProgressDialog(MainActivity.this);
                 progressDialog.setMessage("Loading...");
                 progressDialog.show();
-                handler = new Handler(Looper.getMainLooper()) {
+
+                service.retreiveData(Constants.URL, null, new Handler(Looper.getMainLooper()) {
                     @Override
                     public void handleMessage(Message msg) {
                         progressDialog.dismiss();
@@ -114,10 +134,7 @@ public class MainActivity extends AppCompatActivity {
                             Toast.makeText(MainActivity.this, "Failed Loading Currency Rates", Toast.LENGTH_LONG).show();
                         }
                     }
-                };
-
-                DaggerCurrencyConversionComponent.builder().currencyConversionModule(new CurrencyConversionModule(handler)).build().inject(this);
-                service.retreiveData(Constants.URL, null);
+                });
                 return true;
             default:
                 return super.onOptionsItemSelected(item);

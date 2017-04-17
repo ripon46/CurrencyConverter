@@ -10,6 +10,8 @@ import com.therap.amin.currencyconverter.Constants;
 
 import org.json.JSONObject;
 
+import javax.inject.Inject;
+
 import cz.msebera.android.httpclient.Header;
 
 /**
@@ -17,15 +19,13 @@ import cz.msebera.android.httpclient.Header;
  */
 public class CurrencyConverterService {
 
-    private AsyncHttpClient client;
-    private Handler handler;
+    AsyncHttpClient client;
 
-    public CurrencyConverterService(Handler handler) {
-        client = new AsyncHttpClient();
-        this.handler = handler;
+    public CurrencyConverterService(AsyncHttpClient client) {
+        this.client = client;
     }
 
-    public void retreiveData(String url, RequestParams params) {
+    public void retreiveData(String url, RequestParams params, final Handler handler) {
 
         client.get(url, params, new JsonHttpResponseHandler() {
             @Override

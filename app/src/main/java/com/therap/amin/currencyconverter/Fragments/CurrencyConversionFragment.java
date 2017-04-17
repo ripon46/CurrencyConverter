@@ -18,9 +18,11 @@ import android.widget.Spinner;
 import android.widget.TextView;
 
 import com.therap.amin.currencyconverter.Constants;
+import com.therap.amin.currencyconverter.CurrencyConversionApplication;
 import com.therap.amin.currencyconverter.R;
-import com.therap.amin.currencyconverter.component.DaggerFileProcessorComponent;
-import com.therap.amin.currencyconverter.module.FileProcessorModule;
+import com.therap.amin.currencyconverter.component.DaggerFragmentComponent;
+import com.therap.amin.currencyconverter.component.FragmentComponent;
+import com.therap.amin.currencyconverter.module.FragmentModule;
 import com.therap.amin.currencyconverter.service.FileProcessor;
 
 import javax.inject.Inject;
@@ -48,7 +50,26 @@ public class CurrencyConversionFragment extends Fragment {
 
     private String selectedSource;
 
+    @Inject
     SharedPreferences sharedPreferences;
+
+    @Inject
+    ArrayAdapter<String> inputCurrencyAdapter;
+
+    @Inject
+    ArrayAdapter<String> outputCurrencyAdapter;
+
+    private FragmentComponent fragmentComponent;
+
+    public FragmentComponent getFragmentComponent() {
+        if (fragmentComponent == null) {
+            fragmentComponent = DaggerFragmentComponent.builder()
+                    .applicationComponent(CurrencyConversionApplication.get(getContext()).getComponent())
+                    .fragmentModule(new FragmentModule(getContext()))
+                    .build();
+        }
+        return fragmentComponent;
+    }
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
@@ -58,8 +79,7 @@ public class CurrencyConversionFragment extends Fragment {
     public void onViewCreated(final View view, final Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
-
-        DaggerFileProcessorComponent.builder().fileProcessorModule(new FileProcessorModule(getContext())).build().inject(this);
+        getFragmentComponent().inject(this);
 
         tvOutputCurrencyValue = (TextView) view.findViewById(R.id.tvOutputCurrencyValue);
         tvSavedCurrencyRate = (TextView) view.findViewById(R.id.tvSavedCurrency);
@@ -70,14 +90,11 @@ public class CurrencyConversionFragment extends Fragment {
         webRadioButton = (RadioButton) view.findViewById(R.id.rbWeb);
         ownvalueRadioButton = (RadioButton) view.findViewById(R.id.rbOwn);
 
-        String[] availableCurrencies = getContext().getResources().getStringArray(R.array.currencies);
         ownSavedValue = getString(R.string.own);
         webFetchedValue = getString(R.string.web);
 
         selectedSource = webFetchedValue;
-        ArrayAdapter<String> inputCurrencyAdapter = new ArrayAdapter<String>(getActivity(), android.R.layout.simple_spinner_item, availableCurrencies);
         fromCurrencySpinner.setAdapter(inputCurrencyAdapter);
-        ArrayAdapter<String> outputCurrencyAdapter = new ArrayAdapter<String>(getActivity(), android.R.layout.simple_spinner_item, availableCurrencies);
         toCurrencySpinner.setAdapter(outputCurrencyAdapter);
 
         if (sharedPreferences.contains(Constants.LAST_SAVED_FROM_CURRENCY_KEY)) {
