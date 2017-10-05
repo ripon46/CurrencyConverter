@@ -17,6 +17,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import javax.inject.Inject;
+import javax.inject.Singleton;
 
 
 /**
@@ -25,6 +26,7 @@ import javax.inject.Inject;
 public class FileProcessor {
 
     Context context;
+
     public Map<String, Double> values;
     DecimalFormat numberFormat;
 

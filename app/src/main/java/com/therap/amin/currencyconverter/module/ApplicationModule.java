@@ -24,7 +24,7 @@ public class ApplicationModule {
 
     @Provides
     Context provideContext() {
-        return mApplication;
+        return mApplication.getApplicationContext();
     }
 
     @Provides
@@ -33,13 +33,7 @@ public class ApplicationModule {
     }
 
     @Provides
-    FileProcessor provideFileProcessor() {
-        return new FileProcessor(mApplication);
-    }
-
-    @Provides
     SharedPreferences provideSharedPreferences() {
         return PreferenceManager.getDefaultSharedPreferences(mApplication);
     }
-
 }

@@ -19,8 +19,10 @@ import cz.msebera.android.httpclient.Header;
  */
 public class CurrencyConverterService {
 
+    @Inject
     AsyncHttpClient client;
 
+    @Inject
     public CurrencyConverterService(AsyncHttpClient client) {
         this.client = client;
     }

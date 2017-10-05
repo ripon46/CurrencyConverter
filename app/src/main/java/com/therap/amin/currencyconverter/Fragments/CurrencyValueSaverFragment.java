@@ -13,16 +13,17 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Spinner;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import com.therap.amin.currencyconverter.Constants;
 import com.therap.amin.currencyconverter.CurrencyConversionApplication;
-import com.therap.amin.currencyconverter.activity.MainActivity;
 import com.therap.amin.currencyconverter.R;
-import com.therap.amin.currencyconverter.component.DaggerFragmentComponent;
-import com.therap.amin.currencyconverter.component.FragmentComponent;
+import com.therap.amin.currencyconverter.activity.MainActivity;
+import com.therap.amin.currencyconverter.component.AppComponent;
+import com.therap.amin.currencyconverter.component.DaggerAppComponent;
+import com.therap.amin.currencyconverter.interfaces.ValueSaverFragmentViewInterface;
+import com.therap.amin.currencyconverter.interfaces.ValueSaverPresenterInterface;
+import com.therap.amin.currencyconverter.module.ActivityModule;
 import com.therap.amin.currencyconverter.module.FragmentModule;
-import com.therap.amin.currencyconverter.service.FileProcessor;
 
 import javax.inject.Inject;
 
@@ -30,10 +31,7 @@ import javax.inject.Inject;
 /**
  * @author Ripon
  */
-public class CurrencyValueSaverFragment extends Fragment {
-
-    private String[] availableCurrencies;
-    private boolean tabletSize;
+public class CurrencyValueSaverFragment extends Fragment implements AdapterView.OnItemSelectedListener, ValueSaverFragmentViewInterface {
 
     private Spinner inputCurrencySpinner;
     private Spinner outputCurrencySpinner;
@@ -41,25 +39,23 @@ public class CurrencyValueSaverFragment extends Fragment {
     private EditText etConversionValue;
     private TextView tvPresentCurrencyRelation;
 
+    private AppComponent fragmentComponent;
+
     @Inject
-    FileProcessor fileProcessor;
+    ValueSaverPresenterInterface currencyValueSaverPresenter;
+
+    @Inject
+    ArrayAdapter<String> currencyAdapter;
 
     @Inject
     SharedPreferences sharedPreferences;
 
-    @Inject
-    ArrayAdapter<String> inputCurrencyAdapter;
-
-    @Inject
-    ArrayAdapter<String> outputCurrencyAdapter;
-
-    private FragmentComponent fragmentComponent;
-
-    public FragmentComponent getFragmentComponent() {
+    public AppComponent getFragmentComponent() {
         if (fragmentComponent == null) {
-            fragmentComponent = DaggerFragmentComponent.builder()
+            fragmentComponent = DaggerAppComponent.builder()
                     .applicationComponent(CurrencyConversionApplication.get(getContext()).getComponent())
-                    .fragmentModule(new FragmentModule(getContext()))
+                    .fragmentModule(new FragmentModule((MainActivity) getActivity()))
+                    .activityModule(new ActivityModule((MainActivity) getActivity()))
                     .build();
         }
         return fragmentComponent;
@@ -75,6 +71,8 @@ public class CurrencyValueSaverFragment extends Fragment {
         super.onViewCreated(view, savedInstanceState);
 
         getFragmentComponent().inject(this);
+        getFragmentComponent().inject(currencyValueSaverPresenter);
+        currencyValueSaverPresenter.setView(this, getActivity());
 
         inputCurrencySpinner = (Spinner) view.findViewById(R.id.spnLeftCurrency);
         outputCurrencySpinner = (Spinner) view.findViewById(R.id.spnRightCurrency);
@@ -82,86 +80,55 @@ public class CurrencyValueSaverFragment extends Fragment {
         etConversionValue = (EditText) view.findViewById(R.id.etRightCurrencyValue);
         tvPresentCurrencyRelation = (TextView) view.findViewById(R.id.tvPresentCurrencyRelation);
 
-        availableCurrencies = getContext().getResources().getStringArray(R.array.currencies);
-        tabletSize = getContext().getResources().getBoolean(R.bool.isTablet);
-
-        inputCurrencySpinner.setAdapter(inputCurrencyAdapter);
-        outputCurrencySpinner.setAdapter(outputCurrencyAdapter);
+        inputCurrencySpinner.setAdapter(currencyAdapter);
+        outputCurrencySpinner.setAdapter(currencyAdapter);
 
         if (sharedPreferences.contains(Constants.LAST_SAVED_FROM_CURRENCY_KEY)) {
-            String lastSavedFromCurrency = sharedPreferences.getString(Constants.LAST_SAVED_FROM_CURRENCY_KEY, "");
-            String lastSavedToCurrency = sharedPreferences.getString(Constants.LAST_SAVED_TO_CURRENCY_KEY, "");
-            inputCurrencySpinner.setSelection(inputCurrencyAdapter.getPosition(lastSavedFromCurrency));
-            outputCurrencySpinner.setSelection(outputCurrencyAdapter.getPosition(lastSavedToCurrency));
+            inputCurrencySpinner.setSelection(currencyAdapter.getPosition(sharedPreferences.getString(Constants.LAST_SAVED_FROM_CURRENCY_KEY, "")));
+            outputCurrencySpinner.setSelection(currencyAdapter.getPosition(sharedPreferences.getString(Constants.LAST_SAVED_TO_CURRENCY_KEY, "")));
         }
 
-        inputCurrencySpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
-            @Override
-            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
-                updateUI();
-            }
-
-            @Override
-            public void onNothingSelected(AdapterView<?> parent) {
-
-            }
-        });
-
-        outputCurrencySpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
-            @Override
-            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
-                updateUI();
-            }
-
-            @Override
-            public void onNothingSelected(AdapterView<?> parent) {
-
-            }
-        });
+        inputCurrencySpinner.setOnItemSelectedListener(this);
+        outputCurrencySpinner.setOnItemSelectedListener(this);
 
         saveButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
 
-                if (!etConversionValue.getText().toString().equals("")) {
-                    String inputCurrency = inputCurrencySpinner.getSelectedItem().toString();
-                    String outputCurrency = outputCurrencySpinner.getSelectedItem().toString();
-                    if (!inputCurrency.equals(outputCurrency)) {
-                        sharedPreferences.edit().putString(inputCurrency + outputCurrency, etConversionValue.getText().toString()).apply();
-                        Toast.makeText(getActivity(), "Set successfully", Toast.LENGTH_SHORT).show();
-                        MainActivity mainActivity = (MainActivity) getActivity();
-                        if (!tabletSize) {
-                            mainActivity.replaceFragment(new CurrencyConversionFragment());
-                            mainActivity.setMenus(new CurrencyConversionFragment());
-                        }
-                        sharedPreferences.edit().putString(Constants.LAST_SAVED_FROM_CURRENCY_KEY, inputCurrencySpinner.getSelectedItem().toString()).apply();
-                        sharedPreferences.edit().putString(Constants.LAST_SAVED_TO_CURRENCY_KEY, outputCurrencySpinner.getSelectedItem().toString()).apply();
-                    } else {
-                        Toast.makeText(getActivity(), "You cant set " + inputCurrency + "->" + outputCurrency + " conversion value", Toast.LENGTH_LONG).show();
-                    }
-                } else {
-                    Toast.makeText(getActivity(), "Please give input correctly", Toast.LENGTH_SHORT).show();
-                }
+                currencyValueSaverPresenter.saveButtonClick(etConversionValue.getText().toString(), inputCurrencySpinner.getSelectedItem().toString(),
+                        outputCurrencySpinner.getSelectedItem().toString());
             }
         });
     }
 
+    @Override
+    public void onItemSelected(AdapterView<?> adapterView, View view, int i, long l) {
+        updateUI();
+    }
 
+    @Override
+    public void onNothingSelected(AdapterView<?> adapterView) {
+    }
+
+
+    @Override
+    public void setConversionValue(String string) {
+        etConversionValue.setText(string);
+    }
+
+    @Override
     public void updateUI() {
-        String from = inputCurrencySpinner.getSelectedItem().toString();
-        String to = outputCurrencySpinner.getSelectedItem().toString();
-        Double conversionRate = fileProcessor.calculateConversionRate(from, to);
+        currencyValueSaverPresenter.calculateConversionRate(inputCurrencySpinner.getSelectedItem().toString(), outputCurrencySpinner.getSelectedItem().toString());
+        currencyValueSaverPresenter.saveToPreference(inputCurrencySpinner.getSelectedItem().toString(), outputCurrencySpinner.getSelectedItem().toString());
+    }
 
+
+    @Override
+    public void setPresentCurrencyRelationText(Double conversionRate, String from, String to) {
         if (conversionRate != -1) {
             tvPresentCurrencyRelation.setText(String.format("1 %s = %.2f %s", from, conversionRate, to));
         } else {
-            tvPresentCurrencyRelation.setText(R.string.not_available);
-        }
-        etConversionValue.setText(sharedPreferences.getString(from + to, ""));
-        boolean canPreferenceBeEditedFromThisFragment = sharedPreferences.contains(Constants.LAST_SAVED_FROM_CURRENCY_KEY) || !fileProcessor.values.isEmpty();
-        if (canPreferenceBeEditedFromThisFragment) {
-            sharedPreferences.edit().putString(Constants.LAST_SAVED_FROM_CURRENCY_KEY, inputCurrencySpinner.getSelectedItem().toString()).apply();
-            sharedPreferences.edit().putString(Constants.LAST_SAVED_TO_CURRENCY_KEY, outputCurrencySpinner.getSelectedItem().toString()).apply();
+            tvPresentCurrencyRelation.setText(getContext().getResources().getString(R.string.not_available));
         }
     }
 }

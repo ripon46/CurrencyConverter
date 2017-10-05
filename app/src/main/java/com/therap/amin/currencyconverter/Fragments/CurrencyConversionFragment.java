@@ -20,10 +20,15 @@ import android.widget.TextView;
 import com.therap.amin.currencyconverter.Constants;
 import com.therap.amin.currencyconverter.CurrencyConversionApplication;
 import com.therap.amin.currencyconverter.R;
-import com.therap.amin.currencyconverter.component.DaggerFragmentComponent;
-import com.therap.amin.currencyconverter.component.FragmentComponent;
+import com.therap.amin.currencyconverter.activity.MainActivity;
+import com.therap.amin.currencyconverter.component.AppComponent;
+import com.therap.amin.currencyconverter.component.DaggerAppComponent;
+import com.therap.amin.currencyconverter.interfaces.ConversionFragmentViewInterface;
+import com.therap.amin.currencyconverter.interfaces.ConversionPresenterInterface;
+import com.therap.amin.currencyconverter.module.ActivityModule;
 import com.therap.amin.currencyconverter.module.FragmentModule;
-import com.therap.amin.currencyconverter.service.FileProcessor;
+
+import java.util.Locale;
 
 import javax.inject.Inject;
 
@@ -31,7 +36,7 @@ import javax.inject.Inject;
 /**
  * @author Ripon
  */
-public class CurrencyConversionFragment extends Fragment {
+public class CurrencyConversionFragment extends Fragment implements AdapterView.OnItemSelectedListener, TextWatcher, ConversionFragmentViewInterface {
 
     private String ownSavedValue;
     private String webFetchedValue;
@@ -45,29 +50,28 @@ public class CurrencyConversionFragment extends Fragment {
     private RadioButton webRadioButton;
     private RadioButton ownvalueRadioButton;
 
-    @Inject
-    FileProcessor fileProcessor;
-
     private String selectedSource;
+
+    @Inject
+    ConversionPresenterInterface currencyConversionPresenter;
+
+    @Inject
+    ArrayAdapter<String> currencyAdapter;
 
     @Inject
     SharedPreferences sharedPreferences;
 
-    @Inject
-    ArrayAdapter<String> inputCurrencyAdapter;
+    private AppComponent fragmentComponent;
 
-    @Inject
-    ArrayAdapter<String> outputCurrencyAdapter;
-
-    private FragmentComponent fragmentComponent;
-
-    public FragmentComponent getFragmentComponent() {
+    public AppComponent getFragmentComponent() {
         if (fragmentComponent == null) {
-            fragmentComponent = DaggerFragmentComponent.builder()
+            fragmentComponent = DaggerAppComponent.builder()
                     .applicationComponent(CurrencyConversionApplication.get(getContext()).getComponent())
-                    .fragmentModule(new FragmentModule(getContext()))
+                    .activityModule(new ActivityModule((MainActivity) getActivity()))
+                    .fragmentModule(new FragmentModule((MainActivity) getActivity()))
                     .build();
         }
+
         return fragmentComponent;
     }
 
@@ -76,10 +80,13 @@ public class CurrencyConversionFragment extends Fragment {
         return inflater.inflate(R.layout.fragment_currency_conversion, container, false);
     }
 
+    @Override
     public void onViewCreated(final View view, final Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
         getFragmentComponent().inject(this);
+        getFragmentComponent().inject(currencyConversionPresenter);
+        currencyConversionPresenter.setView(this, getActivity());
 
         tvOutputCurrencyValue = (TextView) view.findViewById(R.id.tvOutputCurrencyValue);
         tvSavedCurrencyRate = (TextView) view.findViewById(R.id.tvSavedCurrency);
@@ -94,60 +101,21 @@ public class CurrencyConversionFragment extends Fragment {
         webFetchedValue = getString(R.string.web);
 
         selectedSource = webFetchedValue;
-        fromCurrencySpinner.setAdapter(inputCurrencyAdapter);
-        toCurrencySpinner.setAdapter(outputCurrencyAdapter);
+
+        fromCurrencySpinner.setAdapter(currencyAdapter);
+        toCurrencySpinner.setAdapter(currencyAdapter);
+
 
         if (sharedPreferences.contains(Constants.LAST_SAVED_FROM_CURRENCY_KEY)) {
             String lastSavedFromCurrency = sharedPreferences.getString(Constants.LAST_SAVED_FROM_CURRENCY_KEY, "");
             String lastSavedToCurrency = sharedPreferences.getString(Constants.LAST_SAVED_TO_CURRENCY_KEY, "");
-            fromCurrencySpinner.setSelection(inputCurrencyAdapter.getPosition(lastSavedFromCurrency));
-            toCurrencySpinner.setSelection(outputCurrencyAdapter.getPosition(lastSavedToCurrency));
+            fromCurrencySpinner.setSelection(currencyAdapter.getPosition(lastSavedFromCurrency));
+            toCurrencySpinner.setSelection(currencyAdapter.getPosition(lastSavedToCurrency));
         }
 
-        fromCurrencySpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
-            @Override
-            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
-                updateUI();
-            }
-
-            @Override
-            public void onNothingSelected(AdapterView<?> parent) {
-
-            }
-        });
-
-        toCurrencySpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
-            @Override
-            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
-                updateUI();
-            }
-
-            @Override
-            public void onNothingSelected(AdapterView<?> parent) {
-
-            }
-        });
-
-        etInputCurrencyValue.addTextChangedListener(new TextWatcher() {
-            @Override
-            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
-
-            }
-
-            @Override
-            public void onTextChanged(CharSequence s, int start, int before, int count) {
-                if (!s.toString().equals("")) {
-                    updateUI();
-                } else {
-                    tvOutputCurrencyValue.setText("0");
-                }
-            }
-
-            @Override
-            public void afterTextChanged(Editable s) {
-
-            }
-        });
+        etInputCurrencyValue.addTextChangedListener(this);
+        fromCurrencySpinner.setOnItemSelectedListener(this);
+        toCurrencySpinner.setOnItemSelectedListener(this);
 
         sourceRadioGroup.setOnCheckedChangeListener(new RadioGroup.OnCheckedChangeListener() {
             @Override
@@ -159,35 +127,62 @@ public class CurrencyConversionFragment extends Fragment {
                 } else if (id == ownvalueRadioButton.getId()) {
                     selectedSource = ownSavedValue;
                 }
-                updateUI();
+                currencyConversionPresenter.calculateConversionRate(fromCurrencySpinner.getSelectedItem().toString(), toCurrencySpinner.getSelectedItem().toString(), selectedSource);
+                currencyConversionPresenter.saveToPreference(fromCurrencySpinner.getSelectedItem().toString(), toCurrencySpinner.getSelectedItem().toString());
             }
         });
 
     }
 
-    public void updateUI() {
-        String from = fromCurrencySpinner.getSelectedItem().toString();
-        String to = toCurrencySpinner.getSelectedItem().toString();
 
-        Double conversionRate = null;
-        if (selectedSource.equals(ownSavedValue)) {
-            String valueFromPreference = sharedPreferences.getString(from + to, null);
-            if (valueFromPreference != null)
-                conversionRate = Double.parseDouble(valueFromPreference);
-        } else if (selectedSource.equals(webFetchedValue) && fileProcessor.calculateConversionRate(from, to) != -1) {
-            conversionRate = fileProcessor.calculateConversionRate(from, to);
+    @Override
+    public void onItemSelected(AdapterView<?> adapterView, View view, int i, long l) {
+        currencyConversionPresenter.calculateConversionRate(fromCurrencySpinner.getSelectedItem().toString(), toCurrencySpinner.getSelectedItem().toString(), selectedSource);
+        currencyConversionPresenter.saveToPreference(fromCurrencySpinner.getSelectedItem().toString(), toCurrencySpinner.getSelectedItem().toString());
+    }
+
+    @Override
+    public void onNothingSelected(AdapterView<?> adapterView) {
+
+    }
+
+    @Override
+    public void beforeTextChanged(CharSequence charSequence, int i, int i1, int i2) {
+
+    }
+
+    @Override
+    public void onTextChanged(CharSequence s, int i, int i1, int i2) {
+        if (!s.toString().equals("")) {
+            currencyConversionPresenter.calculateConversionRate(fromCurrencySpinner.getSelectedItem().toString(), toCurrencySpinner.getSelectedItem().toString(), selectedSource);
+            currencyConversionPresenter.saveToPreference(fromCurrencySpinner.getSelectedItem().toString(), toCurrencySpinner.getSelectedItem().toString());
+        } else {
+            tvOutputCurrencyValue.setText("0");
         }
+    }
+
+    @Override
+    public void afterTextChanged(Editable editable) {
+
+    }
+
+    @Override
+    public void updateTextViews(Double conversionRate, String from, String to) {
         if (conversionRate != null) {
-            tvSavedCurrencyRate.setText(String.format("1 %s = %.2f %s", from, conversionRate, to));
+            tvSavedCurrencyRate.setText(String.format(Locale.ENGLISH, "1 %s = %.2f %s", from, conversionRate, to));
             if (!etInputCurrencyValue.getText().toString().equals("")) {
                 conversionRate *= Double.parseDouble(etInputCurrencyValue.getText().toString());
-                tvOutputCurrencyValue.setText(String.format("%.2f", conversionRate));
+                tvOutputCurrencyValue.setText(String.format(Locale.ENGLISH, "%.2f", conversionRate));
             }
         } else {
             tvSavedCurrencyRate.setText(R.string.not_available);
             tvOutputCurrencyValue.setText("0");
         }
-        sharedPreferences.edit().putString(Constants.LAST_SAVED_FROM_CURRENCY_KEY, fromCurrencySpinner.getSelectedItem().toString()).apply();
-        sharedPreferences.edit().putString(Constants.LAST_SAVED_TO_CURRENCY_KEY, toCurrencySpinner.getSelectedItem().toString()).apply();
+    }
+
+    @Override
+    public void updateUI() {
+        currencyConversionPresenter.calculateConversionRate(fromCurrencySpinner.getSelectedItem().toString(), toCurrencySpinner.getSelectedItem().toString(), selectedSource);
+        currencyConversionPresenter.saveToPreference(fromCurrencySpinner.getSelectedItem().toString(), toCurrencySpinner.getSelectedItem().toString());
     }
 }
