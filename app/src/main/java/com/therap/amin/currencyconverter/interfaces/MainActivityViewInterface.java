@@ -17,4 +17,6 @@ public interface MainActivityViewInterface {
     void replaceFragment(Fragment fragment);
 
     void setMenus(Fragment fragment);
+
+    void dismissDialog();
 }

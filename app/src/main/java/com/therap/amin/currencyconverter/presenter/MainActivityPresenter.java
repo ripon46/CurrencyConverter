@@ -1,6 +1,6 @@
 package com.therap.amin.currencyconverter.presenter;
 
-import android.content.Context;
+import android.app.Activity;
 import android.content.SharedPreferences;
 import android.os.Handler;
 import android.os.Looper;
@@ -10,12 +10,8 @@ import com.therap.amin.currencyconverter.Constants;
 import com.therap.amin.currencyconverter.CurrencyConversionApplication;
 import com.therap.amin.currencyconverter.Fragments.CurrencyValueSaverFragment;
 import com.therap.amin.currencyconverter.activity.MainActivity;
-import com.therap.amin.currencyconverter.component.AppComponent;
-import com.therap.amin.currencyconverter.component.DaggerAppComponent;
 import com.therap.amin.currencyconverter.interfaces.MainActivityPresenterInterface;
 import com.therap.amin.currencyconverter.interfaces.MainActivityViewInterface;
-import com.therap.amin.currencyconverter.module.ActivityModule;
-import com.therap.amin.currencyconverter.module.FragmentModule;
 import com.therap.amin.currencyconverter.service.CurrencyConverterService;
 import com.therap.amin.currencyconverter.service.FileProcessor;
 
@@ -39,28 +35,29 @@ public class MainActivityPresenter implements MainActivityPresenterInterface {
     CurrencyConverterService service;
 
     @Inject
+    CurrencyValueSaverFragment currencyValueSaverFragment;
+
     MainActivityViewInterface mainActivity;
 
-    Context context;
 
-    public MainActivityPresenter(Context context) {
-        this.context = context;
+    public MainActivityPresenter() {
+        CurrencyConversionApplication.getComponent().inject(this);
     }
 
     @Override
     public boolean setCurrencyRatesClicked() {
-        mainActivity.replaceFragment(new CurrencyValueSaverFragment());
-        mainActivity.setMenus(new CurrencyValueSaverFragment());
+        mainActivity.replaceFragment(currencyValueSaverFragment);
+        mainActivity.setMenus(currencyValueSaverFragment);
         return true;
 
     }
 
     @Override
     public boolean loadCurrencyRatesClicked() {
-
         service.retreiveData(Constants.URL, null, new Handler(Looper.getMainLooper()) {
             @Override
             public void handleMessage(Message msg) {
+                mainActivity.dismissDialog();
                 if (msg.what == Constants.SUCCESS) {
                     JSONObject response = (JSONObject) msg.obj;
                     mainActivity.showToastMessage("Successfully Loaded ");
@@ -73,5 +70,10 @@ public class MainActivityPresenter implements MainActivityPresenterInterface {
         });
 
         return true;
+    }
+
+    @Override
+    public void setView(Activity context) {
+        this.mainActivity = (MainActivity) context;
     }
 }

@@ -17,13 +17,8 @@ import android.widget.TextView;
 import com.therap.amin.currencyconverter.Constants;
 import com.therap.amin.currencyconverter.CurrencyConversionApplication;
 import com.therap.amin.currencyconverter.R;
-import com.therap.amin.currencyconverter.activity.MainActivity;
-import com.therap.amin.currencyconverter.component.AppComponent;
-import com.therap.amin.currencyconverter.component.DaggerAppComponent;
 import com.therap.amin.currencyconverter.interfaces.ValueSaverFragmentViewInterface;
 import com.therap.amin.currencyconverter.interfaces.ValueSaverPresenterInterface;
-import com.therap.amin.currencyconverter.module.ActivityModule;
-import com.therap.amin.currencyconverter.module.FragmentModule;
 
 import javax.inject.Inject;
 
@@ -39,8 +34,6 @@ public class CurrencyValueSaverFragment extends Fragment implements AdapterView.
     private EditText etConversionValue;
     private TextView tvPresentCurrencyRelation;
 
-    private AppComponent fragmentComponent;
-
     @Inject
     ValueSaverPresenterInterface currencyValueSaverPresenter;
 
@@ -49,17 +42,6 @@ public class CurrencyValueSaverFragment extends Fragment implements AdapterView.
 
     @Inject
     SharedPreferences sharedPreferences;
-
-    public AppComponent getFragmentComponent() {
-        if (fragmentComponent == null) {
-            fragmentComponent = DaggerAppComponent.builder()
-                    .applicationComponent(CurrencyConversionApplication.get(getContext()).getComponent())
-                    .fragmentModule(new FragmentModule((MainActivity) getActivity()))
-                    .activityModule(new ActivityModule((MainActivity) getActivity()))
-                    .build();
-        }
-        return fragmentComponent;
-    }
 
     @Nullable
     @Override
@@ -70,8 +52,7 @@ public class CurrencyValueSaverFragment extends Fragment implements AdapterView.
     public void onViewCreated(final View view, final Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
-        getFragmentComponent().inject(this);
-        getFragmentComponent().inject(currencyValueSaverPresenter);
+        CurrencyConversionApplication.getComponent().inject(this);
         currencyValueSaverPresenter.setView(this, getActivity());
 
         inputCurrencySpinner = (Spinner) view.findViewById(R.id.spnLeftCurrency);

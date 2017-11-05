@@ -3,9 +3,10 @@ package com.therap.amin.currencyconverter;
 import android.app.Application;
 import android.content.Context;
 
-import com.therap.amin.currencyconverter.component.ApplicationComponent;
-import com.therap.amin.currencyconverter.component.DaggerApplicationComponent;
+import com.therap.amin.currencyconverter.component.AppComponent;
+import com.therap.amin.currencyconverter.component.DaggerAppComponent;
 import com.therap.amin.currencyconverter.module.ApplicationModule;
+import com.therap.amin.currencyconverter.module.FragmentModule;
 
 /**
  * @author Ripon
@@ -13,7 +14,7 @@ import com.therap.amin.currencyconverter.module.ApplicationModule;
 
 public class CurrencyConversionApplication extends Application {
 
-    private ApplicationComponent applicationComponent;
+    public static AppComponent appComponent;
 
     public static CurrencyConversionApplication get(Context context) {
         return (CurrencyConversionApplication) context.getApplicationContext();
@@ -23,11 +24,14 @@ public class CurrencyConversionApplication extends Application {
     public void onCreate() {
         super.onCreate();
 
-        applicationComponent = DaggerApplicationComponent.builder().applicationModule(new ApplicationModule(this)).build();
-        applicationComponent.inject(this);
+        appComponent = DaggerAppComponent.builder()
+                .applicationModule(new ApplicationModule(this))
+                .fragmentModule(new FragmentModule(this))
+                .build();
+
     }
 
-    public ApplicationComponent getComponent() {
-        return applicationComponent;
+    public static AppComponent getComponent() {
+        return appComponent;
     }
 }

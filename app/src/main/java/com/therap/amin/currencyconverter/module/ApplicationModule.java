@@ -5,7 +5,7 @@ import android.content.Context;
 import android.content.SharedPreferences;
 import android.preference.PreferenceManager;
 
-import com.therap.amin.currencyconverter.service.FileProcessor;
+import javax.inject.Singleton;
 
 import dagger.Module;
 import dagger.Provides;
@@ -18,6 +18,10 @@ public class ApplicationModule {
 
     Application mApplication;
 
+    public ApplicationModule() {
+
+    }
+
     public ApplicationModule(Application application) {
         this.mApplication = application;
     }
@@ -28,11 +32,13 @@ public class ApplicationModule {
     }
 
     @Provides
+    @Singleton
     Application provideApplication() {
         return mApplication;
     }
 
     @Provides
+    @Singleton
     SharedPreferences provideSharedPreferences() {
         return PreferenceManager.getDefaultSharedPreferences(mApplication);
     }

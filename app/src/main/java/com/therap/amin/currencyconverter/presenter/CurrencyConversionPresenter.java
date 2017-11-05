@@ -5,6 +5,7 @@ import android.content.Context;
 import android.content.SharedPreferences;
 
 import com.therap.amin.currencyconverter.Constants;
+import com.therap.amin.currencyconverter.CurrencyConversionApplication;
 import com.therap.amin.currencyconverter.Fragments.CurrencyConversionFragment;
 import com.therap.amin.currencyconverter.interfaces.ConversionPresenterInterface;
 import com.therap.amin.currencyconverter.interfaces.MainActivityViewInterface;
@@ -18,7 +19,6 @@ import javax.inject.Inject;
 
 public class CurrencyConversionPresenter implements ConversionPresenterInterface {
 
-    @Inject
     MainActivityViewInterface mainActivityViewInterface;
 
     CurrencyConversionFragment conversionFragmentViewInterface;
@@ -34,10 +34,15 @@ public class CurrencyConversionPresenter implements ConversionPresenterInterface
     private String ownSavedValue = "Own";
     private String webFetchedValue = "Web";
 
+    public CurrencyConversionPresenter() {
+        CurrencyConversionApplication.getComponent().inject(this);
+    }
+
     @Override
     public void setView(CurrencyConversionFragment view, Activity context) {
         this.context = context;
-        conversionFragmentViewInterface = view;
+        this.conversionFragmentViewInterface = view;
+        this.mainActivityViewInterface = (MainActivityViewInterface) context;
     }
 
     @Override

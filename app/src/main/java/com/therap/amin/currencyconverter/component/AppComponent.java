@@ -3,11 +3,13 @@ package com.therap.amin.currencyconverter.component;
 import com.therap.amin.currencyconverter.Fragments.CurrencyConversionFragment;
 import com.therap.amin.currencyconverter.Fragments.CurrencyValueSaverFragment;
 import com.therap.amin.currencyconverter.activity.MainActivity;
-import com.therap.amin.currencyconverter.interfaces.ConversionPresenterInterface;
-import com.therap.amin.currencyconverter.interfaces.MainActivityPresenterInterface;
-import com.therap.amin.currencyconverter.interfaces.ValueSaverPresenterInterface;
 import com.therap.amin.currencyconverter.module.ActivityModule;
+import com.therap.amin.currencyconverter.module.ApplicationModule;
 import com.therap.amin.currencyconverter.module.FragmentModule;
+import com.therap.amin.currencyconverter.presenter.CurrencyConversionPresenter;
+import com.therap.amin.currencyconverter.presenter.CurrencyValueSaverPresenter;
+import com.therap.amin.currencyconverter.presenter.MainActivityPresenter;
+import com.therap.amin.currencyconverter.service.FileProcessor;
 
 import javax.inject.Singleton;
 
@@ -17,7 +19,7 @@ import dagger.Component;
  * @author Ripon
  */
 @Singleton
-@Component(dependencies = ApplicationComponent.class, modules = {ActivityModule.class, FragmentModule.class})
+@Component(modules = {ApplicationModule.class, ActivityModule.class, FragmentModule.class})
 public interface AppComponent {
 
     void inject(CurrencyConversionFragment currencyConversionFragment);
@@ -26,9 +28,11 @@ public interface AppComponent {
 
     void inject(MainActivity mainActivity);
 
-    void inject(ConversionPresenterInterface currencyConversionPresenter);
+    void inject(CurrencyConversionPresenter currencyConversionPresenter);
 
-    void inject(ValueSaverPresenterInterface currencyValueSaverPresenter);
+    void inject(CurrencyValueSaverPresenter currencyValueSaverPresenter);
 
-    void inject(MainActivityPresenterInterface mainActivityPresenter);
+    void inject(MainActivityPresenter mainActivityPresenter);
+
+    void inject(FileProcessor fileProcessor);
 }

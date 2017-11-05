@@ -3,6 +3,8 @@ package com.therap.amin.currencyconverter.service;
 import android.content.Context;
 import android.util.Log;
 
+import com.therap.amin.currencyconverter.CurrencyConversionApplication;
+
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -25,13 +27,14 @@ import javax.inject.Singleton;
  */
 public class FileProcessor {
 
+    @Inject
     Context context;
 
     public Map<String, Double> values;
     DecimalFormat numberFormat;
 
-    @Inject
     public FileProcessor(Context context) {
+        CurrencyConversionApplication.getComponent().inject(this);
         this.context = context;
         values = new HashMap<String, Double>();
         values = readFileAndProcess();

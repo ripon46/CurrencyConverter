@@ -20,13 +20,8 @@ import android.widget.TextView;
 import com.therap.amin.currencyconverter.Constants;
 import com.therap.amin.currencyconverter.CurrencyConversionApplication;
 import com.therap.amin.currencyconverter.R;
-import com.therap.amin.currencyconverter.activity.MainActivity;
-import com.therap.amin.currencyconverter.component.AppComponent;
-import com.therap.amin.currencyconverter.component.DaggerAppComponent;
 import com.therap.amin.currencyconverter.interfaces.ConversionFragmentViewInterface;
 import com.therap.amin.currencyconverter.interfaces.ConversionPresenterInterface;
-import com.therap.amin.currencyconverter.module.ActivityModule;
-import com.therap.amin.currencyconverter.module.FragmentModule;
 
 import java.util.Locale;
 
@@ -61,20 +56,6 @@ public class CurrencyConversionFragment extends Fragment implements AdapterView.
     @Inject
     SharedPreferences sharedPreferences;
 
-    private AppComponent fragmentComponent;
-
-    public AppComponent getFragmentComponent() {
-        if (fragmentComponent == null) {
-            fragmentComponent = DaggerAppComponent.builder()
-                    .applicationComponent(CurrencyConversionApplication.get(getContext()).getComponent())
-                    .activityModule(new ActivityModule((MainActivity) getActivity()))
-                    .fragmentModule(new FragmentModule((MainActivity) getActivity()))
-                    .build();
-        }
-
-        return fragmentComponent;
-    }
-
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         return inflater.inflate(R.layout.fragment_currency_conversion, container, false);
@@ -84,8 +65,7 @@ public class CurrencyConversionFragment extends Fragment implements AdapterView.
     public void onViewCreated(final View view, final Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
-        getFragmentComponent().inject(this);
-        getFragmentComponent().inject(currencyConversionPresenter);
+        CurrencyConversionApplication.getComponent().inject(this);
         currencyConversionPresenter.setView(this, getActivity());
 
         tvOutputCurrencyValue = (TextView) view.findViewById(R.id.tvOutputCurrencyValue);
@@ -127,8 +107,11 @@ public class CurrencyConversionFragment extends Fragment implements AdapterView.
                 } else if (id == ownvalueRadioButton.getId()) {
                     selectedSource = ownSavedValue;
                 }
-                currencyConversionPresenter.calculateConversionRate(fromCurrencySpinner.getSelectedItem().toString(), toCurrencySpinner.getSelectedItem().toString(), selectedSource);
-                currencyConversionPresenter.saveToPreference(fromCurrencySpinner.getSelectedItem().toString(), toCurrencySpinner.getSelectedItem().toString());
+                currencyConversionPresenter.calculateConversionRate(fromCurrencySpinner.getSelectedItem().toString(),
+                        toCurrencySpinner.getSelectedItem().toString(), selectedSource);
+
+                currencyConversionPresenter.saveToPreference(fromCurrencySpinner.getSelectedItem().toString(),
+                        toCurrencySpinner.getSelectedItem().toString());
             }
         });
 
@@ -137,8 +120,11 @@ public class CurrencyConversionFragment extends Fragment implements AdapterView.
 
     @Override
     public void onItemSelected(AdapterView<?> adapterView, View view, int i, long l) {
-        currencyConversionPresenter.calculateConversionRate(fromCurrencySpinner.getSelectedItem().toString(), toCurrencySpinner.getSelectedItem().toString(), selectedSource);
-        currencyConversionPresenter.saveToPreference(fromCurrencySpinner.getSelectedItem().toString(), toCurrencySpinner.getSelectedItem().toString());
+        currencyConversionPresenter.calculateConversionRate(fromCurrencySpinner.getSelectedItem().toString(),
+                toCurrencySpinner.getSelectedItem().toString(), selectedSource);
+
+        currencyConversionPresenter.saveToPreference(fromCurrencySpinner.getSelectedItem().toString(),
+                toCurrencySpinner.getSelectedItem().toString());
     }
 
     @Override
@@ -154,8 +140,11 @@ public class CurrencyConversionFragment extends Fragment implements AdapterView.
     @Override
     public void onTextChanged(CharSequence s, int i, int i1, int i2) {
         if (!s.toString().equals("")) {
-            currencyConversionPresenter.calculateConversionRate(fromCurrencySpinner.getSelectedItem().toString(), toCurrencySpinner.getSelectedItem().toString(), selectedSource);
-            currencyConversionPresenter.saveToPreference(fromCurrencySpinner.getSelectedItem().toString(), toCurrencySpinner.getSelectedItem().toString());
+            currencyConversionPresenter.calculateConversionRate(fromCurrencySpinner.getSelectedItem().toString(),
+                    toCurrencySpinner.getSelectedItem().toString(), selectedSource);
+
+            currencyConversionPresenter.saveToPreference(fromCurrencySpinner.getSelectedItem().toString(),
+                    toCurrencySpinner.getSelectedItem().toString());
         } else {
             tvOutputCurrencyValue.setText("0");
         }
@@ -182,7 +171,10 @@ public class CurrencyConversionFragment extends Fragment implements AdapterView.
 
     @Override
     public void updateUI() {
-        currencyConversionPresenter.calculateConversionRate(fromCurrencySpinner.getSelectedItem().toString(), toCurrencySpinner.getSelectedItem().toString(), selectedSource);
-        currencyConversionPresenter.saveToPreference(fromCurrencySpinner.getSelectedItem().toString(), toCurrencySpinner.getSelectedItem().toString());
+        currencyConversionPresenter.calculateConversionRate(fromCurrencySpinner.getSelectedItem().toString(),
+                toCurrencySpinner.getSelectedItem().toString(), selectedSource);
+
+        currencyConversionPresenter.saveToPreference(fromCurrencySpinner.getSelectedItem().toString(),
+                toCurrencySpinner.getSelectedItem().toString());
     }
 }

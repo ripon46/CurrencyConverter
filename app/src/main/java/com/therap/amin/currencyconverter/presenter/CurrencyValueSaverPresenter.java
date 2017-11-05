@@ -7,13 +7,8 @@ import android.content.SharedPreferences;
 import com.therap.amin.currencyconverter.Constants;
 import com.therap.amin.currencyconverter.CurrencyConversionApplication;
 import com.therap.amin.currencyconverter.Fragments.CurrencyValueSaverFragment;
-import com.therap.amin.currencyconverter.activity.MainActivity;
-import com.therap.amin.currencyconverter.component.AppComponent;
-import com.therap.amin.currencyconverter.component.DaggerAppComponent;
 import com.therap.amin.currencyconverter.interfaces.MainActivityViewInterface;
 import com.therap.amin.currencyconverter.interfaces.ValueSaverPresenterInterface;
-import com.therap.amin.currencyconverter.module.ActivityModule;
-import com.therap.amin.currencyconverter.module.FragmentModule;
 import com.therap.amin.currencyconverter.service.FileProcessor;
 
 import javax.inject.Inject;
@@ -32,27 +27,15 @@ public class CurrencyValueSaverPresenter implements ValueSaverPresenterInterface
     @Inject
     SharedPreferences sharedPreferences;
 
-    @Inject
+
     MainActivityViewInterface mainActivityViewInterface;
 
     CurrencyValueSaverFragment valueSaverFragmentViewInterface;
 
-    private AppComponent fragmentComponent;
-
-    public AppComponent getFragmentComponent() {
-        if (fragmentComponent == null) {
-            fragmentComponent = DaggerAppComponent.builder()
-                    .applicationComponent(CurrencyConversionApplication.get(context).getComponent())
-                    .fragmentModule(new FragmentModule((MainActivity) context))
-                    .activityModule(new ActivityModule((MainActivity) context))
-                    .build();
-        }
-        return fragmentComponent;
-    }
-
     public CurrencyValueSaverPresenter() {
-
+        CurrencyConversionApplication.getComponent().inject(this);
     }
+
 
     @Override
     public void saveButtonClick(String conversionValue, String inputCurrency, String outputCurrency) {
@@ -73,8 +56,9 @@ public class CurrencyValueSaverPresenter implements ValueSaverPresenterInterface
 
     @Override
     public void setView(CurrencyValueSaverFragment view, Activity context) {
-        valueSaverFragmentViewInterface = view;
+        this.valueSaverFragmentViewInterface = view;
         this.context = context;
+        this.mainActivityViewInterface = (MainActivityViewInterface) context;
     }
 
     @Override
