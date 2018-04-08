@@ -3,8 +3,7 @@
     xmlns:app="http://schemas.android.com/apk/res-auto">
 
     <item android:id="@+id/set_currency_rates"
-
-        android:title="Set Currency Rates" />
+        android:title="@string/set_currency_rates" />
 
     <item android:id="@+id/load_currency_rates"
         android:icon="@drawable/refresh"

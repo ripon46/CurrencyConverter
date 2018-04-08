@@ -1,38 +1,40 @@
-package com.therap.amin.currencyconverter;
+package com.therap.amin.currencyconverter.service;
 
 import android.content.Context;
 import android.util.Log;
-import com.google.inject.Inject;
+
+import com.therap.amin.currencyconverter.CurrencyConversionApplication;
 
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
+
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
 import java.text.DecimalFormat;
 import java.util.HashMap;
 import java.util.Map;
 
-import roboguice.inject.ContextSingleton;
+import javax.inject.Inject;
+import javax.inject.Singleton;
 
 
 /**
- * Created by amin on 5/18/16.
+ * @author Ripon
  */
-@ContextSingleton
 public class FileProcessor {
 
+    @Inject
     Context context;
+
     public Map<String, Double> values;
     DecimalFormat numberFormat;
 
-    @Inject
     public FileProcessor(Context context) {
+        CurrencyConversionApplication.getComponent().inject(this);
         this.context = context;
         values = new HashMap<String, Double>();
         values = readFileAndProcess();

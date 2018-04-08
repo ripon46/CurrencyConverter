@@ -28,4 +28,5 @@
     <string name="not_available">Not Available</string>
     <string name="web">Web</string>
     <string name="own">Own</string>
+    <string name="set_currency_rates">Set Currency Rates</string>
 </resources>
